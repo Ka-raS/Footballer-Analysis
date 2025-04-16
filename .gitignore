@@ -1,7 +1,6 @@
 .vscode
 .venv
 source/__pycache__
+output
 test.py
-results.csv
-top_3.txt
 OK Computer
