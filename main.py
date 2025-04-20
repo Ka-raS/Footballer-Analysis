@@ -1,5 +1,5 @@
 from pathlib import Path
-
+ 
 from source import (
     problem_i,
     problem_ii,
@@ -25,9 +25,13 @@ def main() -> None:
         txt.write(highest3_lowest3.to_string(na_rep='N/a'))
     print('Output top_3.txt')
 
-    # results2 = problem_ii.find_median_mean_standard_attrs(players)
-    # results2.to_csv(output_dir / 'results2.csv', na_rep='N/a', encoding='utf-8')
-    # print('Output results2.csv')
+    results2 = problem_ii.find_median_mean_standard_each_teams(players)
+    results2.to_csv(output_dir / 'results2.csv', na_rep='N/a', encoding='utf-8')
+    print('Output results2.csv')
+
+    histograms = problem_ii.plot_histograms_each_stats_and_teams(players)
+    histograms.savefig(output_dir / 'histograms.svg')
+    print('Output histograms.svg')    
 
     # print('\nProblem III:')
 

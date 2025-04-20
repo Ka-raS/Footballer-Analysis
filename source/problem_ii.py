@@ -1,34 +1,92 @@
-import pandas
-import numpy
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+import numpy.typing as npt
 
-def find_highest3_lowest3(players: pandas.DataFrame) -> pandas.DataFrame:
-    """Return DataFrame: 
-    - index=stat_ids (players.columns)
-    - columns=['1st highest', '2nd highest', '3rd highest', '1st lowest', '2nd lowest', '3rd lowest']
-    - each row is 6 player: name - stat
-    - row = numpy.nan if players_column.dtype == object
+
+def find_highest3_lowest3(players: pd.DataFrame) -> pd.DataFrame:
+    """return DataFrame: 
+    - each row is a data-stat
+    - 1st column: data-stat names
+    - 2nd-7th column: (player name + data) of 3 highests and 3 lowests
+    - skip non numeric data-stats (name, team, nationality...) 
     """
-
-    print('Finding The 3 Highest And 3 Lowest Players Of Each Statistic...')
+    print('Finding The 3 Highest And 3 Lowest Players Of Each Data-Stat...')
     
-    # list[[name - stat] * 6]
-    result: list[list[str | float]] = []
+    # list[6 players of each data-stat]
+    result: list[list[str]] = []
     names = players['name']
-    columns = ['1st highest', '2nd highest', '3rd highest', '1st lowest', '2nd lowest', '3rd lowest']
+    numeric_data_stats = players.select_dtypes('number').columns
 
-    for stat_id, stats_column in players.items():
-        if stats_column.dtype == object:
-            result.append([numpy.nan] * 6)
-            continue
-
-        stats = list(stats_column.nlargest(3).items()) + list(stats_column.nsmallest(3).items())
-        result.append([
-            f'{names.loc[i]} - {stat}' if stat is not numpy.nan
-            else numpy.nan
-            for i, stat in stats
+    for data_stat in numeric_data_stats:
+        column = players[data_stat]
+        series = pd.concat([column.nlargest(3), column.nsmallest(3)])
+        result.append([data_stat] + [
+            pd.NA if pd.isna(data)
+            else f'{names.loc[i]} - {data}'
+            for i, data in series.items()
         ])
 
-    return pandas.DataFrame(result, index=players.columns, columns=columns)
+    columns = ['data-stat', '1st highest', '2nd highest', '3rd highest', '1st lowest', '2nd lowest', '3rd lowest']
+    return pd.DataFrame(result, columns=columns)
 
-def find_median_mean_standard_attrs(players: pandas.DataFrame) -> pandas.DataFrame:
-    pass
+def find_median_mean_standard_each_teams(players: pd.DataFrame) -> pd.DataFrame:
+    """return DataFrame:
+    - each row is a team (1st row is all team)
+    - 1st column: team names
+    - 2nd-nth columns: mean1, median1, std1...mean_n, median_n, std_n (for n data-stats)
+    - skip non numeric data-stat (name, team, nationality...)
+    """
+    print('Finding Median, Mean, Standard Of Each Statistic And Team...')
+
+    # all + each team
+    team_data_frames = [('all', players)] + list(players.groupby('team'))
+    numeric_data_stats = players.select_dtypes('number').columns
+
+    # result[i] = [team i, median1, mean1, std1...median_n, mean_n, std_n]
+    result: list[list[float, str]] = []
+
+    for team, data_frame in team_data_frames:
+        team_data: list[float | str] = [team]
+        for data_stat in numeric_data_stats:
+            column = data_frame[data_stat]
+            team_data.extend([
+                column.median(),
+                column.mean(),
+                column.std(),
+            ])
+        result.append(team_data)
+
+    columns = ['team'] + [
+        f'{label} of {data_stat}'
+        for data_stat in numeric_data_stats
+            for label in ['Median', 'Mean', 'Std']
+    ]
+    return pd.DataFrame(result, columns=columns)
+
+def plot_histograms_each_stats_and_teams(players: pd.DataFrame) -> plt.Figure:
+    """return Figure of subplots:
+    - each row is a team (1st row is all team)
+    - each column is a data-stat
+    """
+    print('Plotting Histogram Of Each Statistic And Team...')
+
+    # all + each team
+    team_data_frames = [('all', players)] + list(players.groupby('team'))
+    numeric_data_stats = players.select_dtypes('number').columns
+
+    axes: np.ndarray
+    fig, axes = plt.subplots(len(team_data_frames), len(numeric_data_stats))
+    configs = {
+        # 'color': 'black'
+        # 'edgecolor': 'white'
+    }
+
+    for row, (team, data_frame) in enumerate(team_data_frames):
+        for col, data_stat in enumerate(numeric_data_stats):
+            ax: plt.Axes = axes[row, col]
+            ax.hist(data_frame[data_stat], **configs)
+
+
+    return fig
