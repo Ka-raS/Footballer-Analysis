@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
-import numpy.typing as npt
 
 
 def find_highest3_lowest3(players: pd.DataFrame) -> pd.DataFrame:

@@ -1,0 +1,60 @@
+                       data-stat                  1st highest                  2nd highest                 3rd highest                 1st lowest                 2nd lowest                   3rd lowest
+0                          games         Bruno Guimarães - 33            Bryan Mbeumo - 33         Dean Henderson - 33           Ayden Heaven - 2            Ben Godfrey - 2            Billy Gilmour - 2
+1                   games_starts         Bruno Guimarães - 33            Bryan Mbeumo - 33         Dean Henderson - 33          Ali Al Hamadi - 0                 Antony - 0             Ben Chilwell - 0
+2                        minutes        Dean Henderson - 2970        Nathan Collins - 2970         Bryan Mbeumo - 2964         Harrison Reed - 93          Ayden Heaven - 95    Jahmai Simpson-Pusey - 96
+3                          goals           Mohamed Salah - 27          Alexander Isak - 21         Erling Haaland - 21        Aaron Cresswell - 0         Aaron Ramsdale - 0       Abdukodir Khusanov - 0
+4                        assists           Mohamed Salah - 18            Jacob Murphy - 11       Antonee Robinson - 10        Aaron Cresswell - 0         Aaron Ramsdale - 0       Abdukodir Khusanov - 0
+5                   cards_yellow              Saša Lukić - 12             Will Hughes - 11           Flynn Downes - 10  Abdul Fatawu Issahaku - 0           Adam Webster - 0          Albert Grønbaek - 0
+6                      cards_red          Bruno Fernandes - 2            Jack Stephens - 2      Myles Lewis-Skelly - 2        Aaron Cresswell - 0         Aaron Ramsdale - 0        Aaron Wan-Bissaka - 0
+7                             xg         Mohamed Salah - 22.6        Erling Haaland - 20.8       Alexander Isak - 17.5       Aaron Ramsdale - 0.0   Abdukodir Khusanov - 0.0           Adam Webster - 0.0
+8                      xg_assist         Mohamed Salah - 12.1            Cole Palmer - 9.2         Son Heung-min - 8.2       Aaron Ramsdale - 0.0      Albert Grønbaek - 0.0          Alex McCarthy - 0.0
+9            progressive_carries            Jeremy Doku - 172           Kaoru Mitoma - 135         Mohamed Salah - 133         Aaron Ramsdale - 0          Alex McCarthy - 0              Alex Palmer - 0
+10            progressive_passes        Bruno Fernandes - 254         Joško Gvardiol - 232       Bruno Guimarães - 227         Aaron Ramsdale - 0          Alex McCarthy - 0                  Alisson - 0
+11   progressive_passes_received          Mohamed Salah - 398           Bryan Mbeumo - 301          Kaoru Mitoma - 274         Aaron Ramsdale - 0          Alex McCarthy - 0              Alex Palmer - 0
+12                   goals_per90          James Mcatee - 1.21        Ryan Sessegnon - 1.09        Donyell Malen - 1.01      Aaron Cresswell - 0.0       Aaron Ramsdale - 0.0     Abdukodir Khusanov - 0.0
+13                 assists_per90           Bukayo Saka - 0.66            Danny Ings - 0.63        Mohamed Salah - 0.57      Aaron Cresswell - 0.0       Aaron Ramsdale - 0.0     Abdukodir Khusanov - 0.0
+14                      xg_per90           James Mcatee - 1.1         Marco Asensio - 0.81       Erling Haaland - 0.76       Aaron Ramsdale - 0.0   Abdukodir Khusanov - 0.0           Adam Webster - 0.0
+15               xg_assist_per90       Mykhailo Mudryk - 0.58       Luis Sinisterra - 0.54       Philip Billing - 0.54       Aaron Ramsdale - 0.0        Alex McCarthy - 0.0            Alex Palmer - 0.0
+16         shots_on_target_per90          Julio Enciso - 3.37         Donyell Malen - 2.35      Luis Sinisterra - 2.29      Aaron Cresswell - 0.0       Aaron Ramsdale - 0.0     Abdukodir Khusanov - 0.0
+17              passes_completed       Virgil van Dijk - 2294        Joško Gvardiol - 2160         Levi Colwill - 2036       Albert Grønbaek - 13       Odsonne Édouard - 17           Ali Al Hamadi - 25
+18                    passes_pct         Manuel Akanji - 93.9            Nathan Aké - 93.9       William Saliba - 93.7        George Hirst - 54.1        Kevin Schade - 58.7        Dango Ouattara - 59.8
+19         passes_total_distance      Virgil van Dijk - 41794         Levi Colwill - 36960  Jan Paul van Hecke - 35362      Albert Grønbaek - 135      Odsonne Édouard - 230          Ali Al Hamadi - 278
+20              passes_pct_short       Antonín Kinský - 100.0       Arijanet Muric - 100.0   Caoimhín Kelleher - 100.0        Paul Onuachu - 63.6       Rodrigo Muniz - 67.6          Kevin Schade - 68.6
+21             passes_pct_medium          Alex Palmer - 100.0    Caoimhín Kelleher - 100.0          Danny Ward - 100.0        George Hirst - 42.9     Albert Grønbaek - 50.0       Odsonne Édouard - 57.1
+22                assisted_shots         Bruno Fernandes - 77             Cole Palmer - 75          Mohamed Salah - 73         Aaron Ramsdale - 0          Alex McCarthy - 0          Alphonse Areola - 0
+23       passes_into_final_third        Virgil van Dijk - 245        Youri Tielemans - 217        Joško Gvardiol - 210          Ali Al Hamadi - 0       Chiedozie Ogbene - 0            Evan Ferguson - 0
+24      passes_into_penalty_area           Mohamed Salah - 78              Alex Iwobi - 74        Martin Ødegaard - 65     Abdukodir Khusanov - 0        Albert Grønbaek - 0            Alex McCarthy - 0
+25     crosses_into_penalty_area        Antonee Robinson - 26            Milos Kerkez - 22            Pedro Porro - 22         Aaron Ramsdale - 0     Abdukodir Khusanov - 0             Adam Webster - 0
+26                           sca            Cole Palmer - 175        Bruno Fernandes - 156         Mohamed Salah - 139          Alex McCarthy - 0                Ben Mee - 0        Benoît Badiashile - 0
+27                     sca_per90        Philip Billing - 7.83        Luis Guilherme - 6.52      Marcus Rashford - 6.36        Alex McCarthy - 0.0              Ben Mee - 0.0      Benoît Badiashile - 0.0
+28                           gca           Mohamed Salah - 24             Bukayo Saka - 21       Mikkel Damsgaard - 21        Aaron Cresswell - 0         Aaron Ramsdale - 0       Abdukodir Khusanov - 0
+29                     gca_per90            Solly March - 1.7           Bukayo Saka - 1.38        Harvey Elliott - 1.1      Aaron Cresswell - 0.0       Aaron Ramsdale - 0.0     Abdukodir Khusanov - 0.0
+30                       tackles           Daniel Muñoz - 107       Noussair Mazraoui - 95         Moisés Caicedo - 94         Aaron Ramsdale - 0          Alex McCarthy - 0              Alex Palmer - 0
+31                   tackles_won            Daniel Muñoz - 68          Moisés Caicedo - 58       Antonee Robinson - 55         Aaron Ramsdale - 0          Alex McCarthy - 0              Alex Palmer - 0
+32                    challenges  Trent Alexander-Arnold - 99     Alexis Mac Allister - 91             João Gomes - 89          Alex McCarthy - 0            Alex Palmer - 0              Ben Godfrey - 0
+33               challenges_lost              João Gomes - 54  Trent Alexander-Arnold - 53         Enzo Fernández - 46          Alex McCarthy - 0            Alex Palmer - 0           Antonín Kinský - 0
+34                        blocks          Nathan Collins - 68         Tyrick Mitchell - 61    Alexis Mac Allister - 57         Aaron Ramsdale - 0          Alex McCarthy - 0              Alex Palmer - 0
+35                 blocked_shots          Nathan Collins - 48             Dara O'Shea - 45             Max Kilman - 37         Aaron Ramsdale - 0  Abdul Fatawu Issahaku - 0             Adama Traoré - 0
+36                blocked_passes     Alexis Mac Allister - 52         Tyrick Mitchell - 49        Antoine Semenyo - 48         Aaron Ramsdale - 0        Albert Grønbaek - 0            Alex McCarthy - 0
+37                 interceptions       Aaron Wan-Bissaka - 57        Antonee Robinson - 55       Ryan Gravenberch - 54        Albert Grønbaek - 0          Alex McCarthy - 0              Alex Palmer - 0
+38                       touches       Virgil van Dijk - 2819        Joško Gvardiol - 2711         Levi Colwill - 2506       Albert Grønbaek - 38       Odsonne Édouard - 45           Ali Al Hamadi - 53
+39          touches_def_pen_area          Mark Flekken - 1261            Bernd Leno - 1001       Bart Verbruggen - 974            Emi Buendía - 0          Callum Wilson - 1            Evan Ferguson - 1
+40               touches_def_3rd          Mark Flekken - 1569            Bernd Leno - 1250    Emiliano Martínez - 1240        Odsonne Édouard - 4          Callum Wilson - 5              Solly March - 5
+41               touches_mid_3rd       Virgil van Dijk - 1561        Joško Gvardiol - 1348       Moisés Caicedo - 1348          Alex McCarthy - 0             Danny Ward - 0           Fraser Forster - 0
+42               touches_att_3rd          Mohamed Salah - 943           Bryan Mbeumo - 852       Bruno Fernandes - 825         Aaron Ramsdale - 0          Alex McCarthy - 0              Alex Palmer - 0
+43          touches_att_pen_area          Mohamed Salah - 298        Antoine Semenyo - 174        Erling Haaland - 170         Aaron Ramsdale - 0          Alex McCarthy - 0              Alex Palmer - 0
+44                      take_ons         Mohammed Kudus - 177            Jeremy Doku - 171         Morgan Rogers - 145         Aaron Ramsdale - 0          Alex McCarthy - 0              Alex Palmer - 0
+45                       carries        Joško Gvardiol - 1753       Virgil van Dijk - 1589   Jan Paul van Hecke - 1533       Albert Grønbaek - 18        Michael Kayode - 23         Odsonne Édouard - 23
+46  carries_progressive_distance    Jan Paul van Hecke - 6601        Joško Gvardiol - 5179           Rúben Dias - 4881       Albert Grønbaek - 15        Massimo Luongo - 25           Harrison Reed - 27
+47      carries_into_final_third              Alex Iwobi - 91          Joško Gvardiol - 89            Jeremy Doku - 81         Aaron Ramsdale - 0        Albert Grønbaek - 0            Alex McCarthy - 0
+48     carries_into_penalty_area          Mohamed Salah - 107             Jeremy Doku - 78           Noni Madueke - 74        Aaron Cresswell - 0         Aaron Ramsdale - 0       Abdukodir Khusanov - 0
+49                   miscontrols           Mohamed Salah - 99              Liam Delap - 92          Morgan Rogers - 92          Alex McCarthy - 0        Alphonse Areola - 0           Antonín Kinský - 0
+50                  dispossessed          Mohammed Kudus - 84         Bruno Guimarães - 73       Dejan Kulusevski - 70        Aaron Cresswell - 0         Aaron Ramsdale - 0            Alex McCarthy - 0
+51               passes_received        Joško Gvardiol - 1985       Virgil van Dijk - 1931         Levi Colwill - 1835       Albert Grønbaek - 21       Odsonne Édouard - 26                    Neto - 28
+52                         fouls         Antoine Semenyo - 64              Liam Delap - 63             João Gomes - 62        Albert Grønbaek - 0          Alex McCarthy - 0                  Alisson - 0
+53                        fouled         Bruno Guimarães - 98          James Maddison - 63         Anthony Gordon - 62        Alphonse Areola - 0          Andrés García - 0           Antonín Kinský - 0
+54                      offsides             Jamie Vardy - 23          Alexander Isak - 20         Mohammed Kudus - 18        Aaron Cresswell - 0         Aaron Ramsdale - 0       Abdukodir Khusanov - 0
+55                       crosses           Bryan Mbeumo - 171            Pedro Porro - 168       Bruno Fernandes - 162         Aaron Ramsdale - 0          Alex McCarthy - 0              Alex Palmer - 0
+56               ball_recoveries         Moisés Caicedo - 184        Bruno Fernandes - 182         Ryan Christie - 182             Danny Ward - 1         Fraser Forster - 1  Hákon Rafn Valdimarsson - 1
+57                   aerials_won               Dan Burn - 122         Nathan Collins - 103       Virgil van Dijk - 102          Andrés García - 0                 Antony - 0            Billy Gilmour - 0
+58                  aerials_lost    Jean-Philippe Mateta - 95    Jørgen Strand Larsen - 91           Raúl Jiménez - 80         Aaron Ramsdale - 0        Albert Grønbaek - 0            Alex McCarthy - 0

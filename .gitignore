@@ -1,7 +1,11 @@
-.vscode
-.venv
-source/__pycache__
-output
+.vscode/
+.venv/
+__pycache__/
+source/__pycache__/
+output/
+
 test.py
-main.ipynb
+test.ipynb
+scraper.py
+
 OK Computer
