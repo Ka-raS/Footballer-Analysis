@@ -7,32 +7,20 @@
 - [**pandas**](https://pypi.org/project/pandas/) - Data Manipulation
 - [**matplotlib**](https://pypi.org/project/matplotlib/) - Plotting histograms
 
-## Run Program
+## Installation
 
-1. Git Clone:
+1. Clone:
     ```bash
     git clone https://github.com/Ka-raS/School-Assignment-1.git
     cd School-Assignment-1
     ```
 
-2. Install 3rd-Party Modules:
-
-   Linux/MacOS
-    ```bash
-    pip3 install requirements.txt
-    ```
-   Window
+2. Install dependencies:
     ```bash
     pip install requirements.txt
     ```
 
 3. Run:
-
-   Linux/MacOS
     ```bash
-    python3 main.py
-    ```
-   Window
-    ```bash
-    py main.py
+    python main.py
     ```
