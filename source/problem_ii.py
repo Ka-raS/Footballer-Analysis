@@ -76,6 +76,7 @@ def plot_histograms_each_stats_and_teams(players: pd.DataFrame) -> plt.Figure:
     team_data_frames = [('all', players)] + list(players.groupby('team'))
     numeric_data_stats = players.select_dtypes('number').columns
 
+    ax: plt.Axes
     axes: np.ndarray
     fig, axes = plt.subplots(len(team_data_frames), len(numeric_data_stats))
     configs = {
@@ -83,10 +84,16 @@ def plot_histograms_each_stats_and_teams(players: pd.DataFrame) -> plt.Figure:
         # 'edgecolor': 'white'
     }
 
-    for row, (team, data_frame) in enumerate(team_data_frames):
+    for row, (_, data_frame) in enumerate(team_data_frames):
         for col, data_stat in enumerate(numeric_data_stats):
-            ax: plt.Axes = axes[row, col]
+            ax = axes[row, col]
             ax.hist(data_frame[data_stat], **configs)
 
+    # subplots column indices
+    for ax, data_stat in zip(axes[0, :], numeric_data_stats):
+        ax.set_title(data_stat)
+    # subplots row indices
+    for ax, (team, _) in zip(axes[:, 0], team_data_frames):
+        ax.set_ylabel(team)
 
     return fig

@@ -116,6 +116,8 @@ def _get_players_from_team(team: str, url: str, minutes_minimum: int) -> ValuesV
     """return players data-stats in TABLES_STATS"""
 
     response = requests.get(url)
+    if response.status_code != 200:
+        raise Exception(f'Status Code {response.status_code} From {url}')
     soup = bs4.BeautifulSoup(response.content, 'html.parser')
     response.close()
 
@@ -162,6 +164,8 @@ def _get_team_name_and_urls() -> list[tuple[str, str]]:
 
     url = 'https://fbref.com/en/comps/9/2024-2025/2024-2025-Premier-League-Stats'
     response = requests.get(url)
+    if response.status_code != 200:
+        raise Exception(f'Status Code {response.status_code} From {url}')
     soup = bs4.BeautifulSoup(response.content, 'html.parser')
     response.close()
 

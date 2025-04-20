@@ -16,6 +16,12 @@
     ```
 
 2. Install 3rd-Party Modules:
+
+   Linux/MacOS
+    ```bash
+    pip3 install requirements.txt
+    ```
+   Window
     ```bash
     pip install requirements.txt
     ```
