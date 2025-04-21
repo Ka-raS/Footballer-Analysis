@@ -4,8 +4,8 @@ __pycache__/
 source/__pycache__/
 output/
 
+main.ipynb
 test.py
-test.ipynb
 scraper.py
 
 OK Computer

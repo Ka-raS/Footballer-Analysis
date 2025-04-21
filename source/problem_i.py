@@ -7,7 +7,7 @@ import pandas as pd
 
 
 # list[tuple[table id, list[data-stat]]]
-TABLES_STATS = [
+TABLES_DATA_STATS = [
     ('stats_standard_9', [
         'nationality',
         'position',
@@ -99,21 +99,23 @@ TABLES_STATS = [
     ])
 ]
 
-Data = int | float | str
 
-def _convert_dtype(text: str) -> Data:
-    if text == '':
-        return pd.NA
+Data = int | float | str | None
+
+
+def _convert_type(text: str) -> Data:
+    if not text:
+        return None
     formatted = text.replace(',', '') # format 123,456,789.123 -> 123456789.123
-    for dtype in (int, float):
+    for t in (int, float):
         try:
-            return dtype(formatted)
+            return t(formatted)
         except ValueError:
             pass
     return text
 
 def _get_players_from_team(team: str, url: str, minutes_minimum: int) -> ValuesView[list[Data]]:
-    """return players data-stats in TABLES_STATS"""
+    """return players data-stats in TABLES_DATA_STATS"""
 
     response = requests.get(url)
     response.raise_for_status()
@@ -127,13 +129,13 @@ def _get_players_from_team(team: str, url: str, minutes_minimum: int) -> ValuesV
     for tr in soup.select(f'table#stats_playing_time_9 > tbody > tr'):
         name = tr.th.text
         td = tr.select_one('td[data-stat="minutes"]')
-        minutes = _convert_dtype(td.text)
-        if pd.notna(minutes) and minutes > minutes_minimum:
+        minutes = _convert_type(td.text)
+        if minutes and minutes > minutes_minimum:
             players[name] = [name, team]
     
     # find remaining players data-stats
     data_count = 2 # [name, team]
-    for table_id, data_stats_target in TABLES_STATS:
+    for table_id, data_stats_target in TABLES_DATA_STATS:
         data_count += len(data_stats_target)
 
         # players in table
@@ -147,14 +149,14 @@ def _get_players_from_team(team: str, url: str, minutes_minimum: int) -> ValuesV
                 for td in tr.select('td[data-stat]')
             }
             players[name].extend(
-                _convert_dtype(data_found[data_stat])
+                _convert_type(data_found[data_stat])
                 for data_stat in data_stats_target
             )
 
         # players not in table
         for data_list in players.values():
             missing = data_count - len(data_list)
-            data_list.extend([pd.NA] * missing)
+            data_list.extend([None] * missing)
 
     return players.values()
 
@@ -178,7 +180,6 @@ def get_premier_league_players() -> pd.DataFrame:
     """return DataFrame:
     - each row is a player
     - each column is a data-stat
-    - cell = numpy.nan if empty or not found
     """
 
     request_sleep = 6.0
@@ -186,21 +187,21 @@ def get_premier_league_players() -> pd.DataFrame:
     print(f'Sleep / Request: {request_sleep} Seconds')
 
     players: list[list[Data]] = []
+    minutes_minimum = 90
     team_infos = _get_team_name_and_urls()
     time.sleep(request_sleep)
     team_count = len(team_infos)
-    minutes_minimum = 90
 
     for count, (team, url) in enumerate(team_infos):
         print(f"[{count}/{team_count}] Team: {team}")
         players.extend(_get_players_from_team(team, url, minutes_minimum))
-        time.sleep(request_sleep) 
+        time.sleep(request_sleep)
 
     # sort by name
     players.sort()
     columns = ['name', 'team'] + [
         data_stat
-        for _, data_stats in TABLES_STATS
+        for _, data_stats in TABLES_DATA_STATS
             for data_stat in data_stats
     ]
     return pd.DataFrame(players, columns=columns)

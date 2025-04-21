@@ -13,7 +13,7 @@ def find_highest3_lowest3(players: pd.DataFrame) -> pd.DataFrame:
     print('Finding The 3 Highest And 3 Lowest Players Of Each Data-Stat...')
     
     # list[6 players of each data-stat]
-    result: list[list[str]] = []
+    result: list[list[str | None]] = []
     names = players['name']
     numeric_data_stats = players.select_dtypes('number').columns
 
@@ -21,7 +21,7 @@ def find_highest3_lowest3(players: pd.DataFrame) -> pd.DataFrame:
         column = players[data_stat]
         series = pd.concat([column.nlargest(3), column.nsmallest(3)])
         result.append([data_stat] + [
-            pd.NA if pd.isna(data)
+            np.nan if np.isnan(data)
             else f'{names.loc[i]} - {data}'
             for i, data in series.items()
         ])
@@ -38,15 +38,14 @@ def find_median_mean_standard_each_teams(players: pd.DataFrame) -> pd.DataFrame:
     """
     print('Finding Median, Mean, Standard Of Each Statistic And Team...')
 
+    # result[i] = [team i, median1, mean1, std1...median_n, mean_n, std_n]
+    result: list[list[float, str]] = []
     # all + each team
     team_data_frames = [('all', players)] + list(players.groupby('team'))
     numeric_data_stats = players.select_dtypes('number').columns
 
-    # result[i] = [team i, median1, mean1, std1...median_n, mean_n, std_n]
-    result: list[list[float, str]] = []
-
     for team, data_frame in team_data_frames:
-        team_data: list[float | str] = [team]
+        team_data: list[str | float] = [team]
         for data_stat in numeric_data_stats:
             column = data_frame[data_stat]
             team_data.extend([
@@ -68,7 +67,7 @@ def plot_histograms_each_stats_and_teams(players: pd.DataFrame) -> plt.Figure:
     - each row is a team (1st row is all team)
     - each column is a data-stat
     """
-    print('Plotting Histogram Of Each Statistic And Team...')
+    print('Plotting Histogram Of Each Statistic And Each Team...')
 
     # all + each team
     team_data_frames = [('all', players)] + list(players.groupby('team'))
