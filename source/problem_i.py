@@ -1,9 +1,10 @@
 import time
+from pathlib import Path
 from collections.abc import ValuesView
 
-import bs4
 import requests
 import pandas as pd
+from bs4 import BeautifulSoup
 
 
 # list[tuple[table id, list[data-stat]]]
@@ -119,7 +120,7 @@ def _get_players_from_team(team: str, url: str, minutes_minimum: int) -> ValuesV
 
     response = requests.get(url)
     response.raise_for_status()
-    soup = bs4.BeautifulSoup(response.content, 'html.parser')
+    soup = BeautifulSoup(response.content, 'html.parser')
     response.close()
 
     # str: name
@@ -166,7 +167,7 @@ def _get_team_name_and_urls() -> list[tuple[str, str]]:
     url = 'https://fbref.com/en/comps/9/2024-2025/2024-2025-Premier-League-Stats'
     response = requests.get(url)
     response.raise_for_status()
-    soup = bs4.BeautifulSoup(response.content, 'html.parser')
+    soup = BeautifulSoup(response.content, 'html.parser')
     response.close()
 
     # Premier League Table
@@ -205,3 +206,7 @@ def get_premier_league_players() -> pd.DataFrame:
             for data_stat in data_stats
     ]
     return pd.DataFrame(players, columns=columns)
+
+def solve(players: pd.DataFrame, output_dir: Path) -> None:
+    players.to_csv(output_dir / 'results.csv', na_rep='N/a', encoding='utf-8')
+    print('Output results.csv')
