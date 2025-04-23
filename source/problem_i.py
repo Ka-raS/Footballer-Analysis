@@ -100,9 +100,7 @@ TABLES_DATA_STATS = [
     ])
 ]
 
-
 Data = int | float | str | None
-
 
 def _convert_type(text: str) -> Data:
     if not text:
@@ -135,9 +133,9 @@ def _get_players_from_team(team: str, url: str, minutes_minimum: int) -> ValuesV
             players[name] = [name, team]
     
     # find remaining players data-stats
-    data_count = 2 # [name, team]
-    for table_id, data_stats_target in TABLES_DATA_STATS:
-        data_count += len(data_stats_target)
+    ds_count = 2 # [name, team]
+    for table_id, dstats_target in TABLES_DATA_STATS:
+        ds_count += len(dstats_target)
 
         # players in table
         for tr in soup.select(f'table#{table_id} > tbody > tr'):
@@ -150,13 +148,13 @@ def _get_players_from_team(team: str, url: str, minutes_minimum: int) -> ValuesV
                 for td in tr.select('td[data-stat]')
             }
             players[name].extend(
-                _convert_type(data_found[data_stat])
-                for data_stat in data_stats_target
+                _convert_type(data_found[dstat])
+                for dstat in dstats_target
             )
 
         # players not in table
         for data_list in players.values():
-            missing = data_count - len(data_list)
+            missing = ds_count - len(data_list)
             data_list.extend([None] * missing)
 
     return players.values()
@@ -184,29 +182,30 @@ def get_premier_league_players() -> pd.DataFrame:
     """
 
     request_sleep = 6.0
-    print("Scraping fbref.com...")
-    print(f'Sleep / Request: {request_sleep} Seconds')
+    print('Scraping fbref.com...')
+    print(f'Sleep / Request: {request_sleep} seconds')
 
     players: list[list[Data]] = []
     minutes_minimum = 90
     team_infos = _get_team_name_and_urls()
     time.sleep(request_sleep)
-    team_count = len(team_infos)
+    count = len(team_infos)
 
-    for count, (team, url) in enumerate(team_infos):
-        print(f"[{count}/{team_count}] Team: {team}")
+    for i, (team, url) in enumerate(team_infos):
+        print(f'\r[{i}/{count}] Team: {team}         ', end='')
         players.extend(_get_players_from_team(team, url, minutes_minimum))
         time.sleep(request_sleep)
+    print(f'\r[{count}/{count}] Done                 ')
 
     # sort by name
     players.sort()
     columns = ['name', 'team'] + [
-        data_stat
-        for _, data_stats in TABLES_DATA_STATS
-            for data_stat in data_stats
+        dstat
+        for _, dstats in TABLES_DATA_STATS
+            for dstat in dstats
     ]
     return pd.DataFrame(players, columns=columns)
 
 def solve(players: pd.DataFrame, output_dir: Path) -> None:
     players.to_csv(output_dir / 'results.csv', na_rep='N/a', encoding='utf-8')
-    print('Output results.csv')
+    print('Output to results.csv')
