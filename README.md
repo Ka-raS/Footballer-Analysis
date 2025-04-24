@@ -6,6 +6,7 @@
 - [**bs4**](https://pypi.org/project/bs4/) - Parsing HTML
 - [**pandas**](https://pypi.org/project/pandas/) - Data Manipulation
 - [**matplotlib**](https://pypi.org/project/matplotlib/) - Plotting histograms
+- [**scikit-learn**](https://pypi.org/project/scikit-learn/) - 
 
 ## Installation
 
