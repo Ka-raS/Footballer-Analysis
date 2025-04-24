@@ -1,2 +1,4 @@
-archives/* linguist-documentation
-documents/* linguist-documentation
+*.txt text
+*.csv text
+*.html text
+*.pdf binary
