@@ -84,8 +84,14 @@ def _plot_figure(all_data: pd.Series, teams_data: Iterable[tuple[str, pd.Series]
     _config_ax(ax_all, all_data)
 
     # teams_data
+    is_ax0 = True
     for (r, c), (team, data) in zip(np.ndindex(rows - 1, cols), teams_data):
-        ax = fig.add_subplot(gs[r + 1, c]) # skip r = 0
+        # skip r = 0
+        if is_ax0:
+            is_ax0 = False
+            ax = ax0 = fig.add_subplot(gs[r + 1, c]) 
+        else:
+            ax = fig.add_subplot(gs[r + 1, c], sharex=ax0, sharey=ax0)
         ax.set_title(team, color='white')
         _config_ax(ax, data)
 
