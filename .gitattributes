@@ -2,3 +2,5 @@
 *.csv text
 *.html text
 *.pdf binary
+
+archives/*.html linguist-documentation
