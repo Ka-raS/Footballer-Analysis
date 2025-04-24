@@ -3,8 +3,8 @@ from pathlib import Path
 from source import (
     problem_i,
     problem_ii,
-    # problem_iii,
-    # problem_iv
+    problem_iii,
+    problem_iv
 ) 
 
 
@@ -19,9 +19,14 @@ def main() -> None:
     print('\nProblem II:')
     problem_ii.solve(players, output_dir)
 
+    # print('\nProblem III:')
     # problem_iii.solve(players, output_dir)
     
+    # print('\nProblem IV:')
     # problem_iv.solve(players, output_dir)
+
+    # print('\nProgram ended. Press any key to close...')
+    # input()
 
 if __name__ == '__main__':
     main()

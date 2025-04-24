@@ -1,15 +1,15 @@
 import time
 from pathlib import Path
-from collections.abc import ValuesView
+from collections.abc import Iterable
 
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 
 
-# list[tuple[table id, list[data-stat]]]
-TABLES_DATA_STATS = [
-    ('stats_standard_9', [
+# table ids + data-stats
+TABLES_DATA_STATS = {
+    'stats_standard_9': [
         'nationality',
         'position',
         'age', 
@@ -29,20 +29,20 @@ TABLES_DATA_STATS = [
         'assists_per90',
         'xg_per90',
         'xg_assist_per90'
-    ]),
-    ('stats_keeper_9', [
+    ],
+    'stats_keeper_9': [
         'gk_goals_against_per90',
         'gk_save_pct',
         'gk_clean_sheets_pct',
         'gk_pens_save_pct'
-    ]), 
-    ('stats_shooting_9', [
+    ], 
+    'stats_shooting_9': [
         'shots_on_target_pct',
         'shots_on_target_per90',
         'goals_per_shot',
         'average_shot_distance'
-    ]),
-    ('stats_passing_9', [
+    ],
+    'stats_passing_9': [
         'passes_completed',
         'passes_pct',
         'passes_total_distance',
@@ -53,14 +53,14 @@ TABLES_DATA_STATS = [
         'passes_into_final_third',
         'passes_into_penalty_area',
         'crosses_into_penalty_area'
-    ]),
-    ('stats_gca_9', [
+    ],
+    'stats_gca_9': [
         'sca',
         'sca_per90',
         'gca',
         'gca_per90'
-    ]),
-    ('stats_defense_9', [
+    ],
+    'stats_defense_9': [
         'tackles',
         'tackles_won',
         'challenges',
@@ -69,8 +69,8 @@ TABLES_DATA_STATS = [
         'blocked_shots',
         'blocked_passes',
         'interceptions'
-    ]),
-    ('stats_possession_9', [
+    ],
+    'stats_possession_9': [
         'touches',
         'touches_def_pen_area',
         'touches_def_3rd',
@@ -87,8 +87,8 @@ TABLES_DATA_STATS = [
         'miscontrols',
         'dispossessed',
         'passes_received'
-    ]),
-    ('stats_misc_9', [
+    ],
+    'stats_misc_9': [
         'fouls',
         'fouled',
         'offsides',
@@ -97,15 +97,15 @@ TABLES_DATA_STATS = [
         'aerials_won',
         'aerials_lost',
         'aerials_won_pct'
-    ])
-]
+    ]
+}
 
 Data = int | float | str | None
 
 def _convert_type(text: str) -> Data:
     if not text:
         return None
-    formatted = text.replace(',', '') # format 123,456,789.123 -> 123456789.123
+    formatted = text.replace(',', '')
     for t in (int, float):
         try:
             return t(formatted)
@@ -113,7 +113,7 @@ def _convert_type(text: str) -> Data:
             pass
     return text
 
-def _get_players_from_team(team: str, url: str, minutes_minimum: int) -> ValuesView[list[Data]]:
+def _get_players_from_team(team: str, url: str, minutes_minimum: int) -> Iterable[list[Data]]:
     """return players data-stats in TABLES_DATA_STATS"""
 
     response = requests.get(url)
@@ -134,7 +134,7 @@ def _get_players_from_team(team: str, url: str, minutes_minimum: int) -> ValuesV
     
     # find remaining players data-stats
     ds_count = 2 # [name, team]
-    for table_id, dstats_target in TABLES_DATA_STATS:
+    for table_id, dstats_target in TABLES_DATA_STATS.items():
         ds_count += len(dstats_target)
 
         # players in table
@@ -160,7 +160,7 @@ def _get_players_from_team(team: str, url: str, minutes_minimum: int) -> ValuesV
     return players.values()
 
 def _get_team_name_and_urls() -> list[tuple[str, str]]:
-    """return list[tuple[team, url]]"""
+    """return team names + urls"""
 
     url = 'https://fbref.com/en/comps/9/2024-2025/2024-2025-Premier-League-Stats'
     response = requests.get(url)
@@ -201,7 +201,7 @@ def get_premier_league_players() -> pd.DataFrame:
     players.sort()
     columns = ['name', 'team'] + [
         dstat
-        for _, dstats in TABLES_DATA_STATS
+        for dstats in TABLES_DATA_STATS.values()
             for dstat in dstats
     ]
     return pd.DataFrame(players, columns=columns)
