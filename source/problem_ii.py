@@ -80,13 +80,13 @@ def _plot_figure(all_data: pd.Series, teams_data: Iterable[tuple[str, pd.Series]
 
     # all_data
     ax_all = fig.add_subplot(gs[0, cols // 2])
-    ax_all.set_title('all')
+    ax_all.set_title('all', color='white')
     _config_ax(ax_all, all_data)
 
     # teams_data
     for (r, c), (team, data) in zip(np.ndindex(rows - 1, cols), teams_data):
         ax = fig.add_subplot(gs[r + 1, c]) # skip r = 0
-        ax.set_title(team)
+        ax.set_title(team, color='white')
         _config_ax(ax, data)
 
     fig.tight_layout()
@@ -176,5 +176,5 @@ def solve(players: pd.DataFrame, output_dir: Path) -> None:
 
     _output_top_3_txt(all_df, players['name'], output_dir)
     _output_results2_csv(all_df, team_dfs, output_dir)
-    # _output_histograms(all_df, team_dfs, output_dir)
+    _output_histograms(all_df, team_dfs, output_dir)
     _output_best_teams_txt(team_dfs, output_dir)
