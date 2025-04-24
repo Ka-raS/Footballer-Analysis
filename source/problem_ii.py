@@ -8,11 +8,6 @@ from matplotlib import gridspec
 
 
 def _output_top_3_txt(all_df: pd.DataFrame, names: pd.Series, output_dir: Path) -> None:
-    """write to top_3.txt: 
-    - each row is a data-stat
-    - each column: (player name + data) of 3 highests and 3 lowests
-    - skip non-numeric data-stat (name, team, nationality...) 
-    """
     print('Finding the 3 Highests and 3 Lowests of each Data-Stat...')
 
     def find_6players(series: pd.Series) -> list[str]:
@@ -33,20 +28,12 @@ def _output_top_3_txt(all_df: pd.DataFrame, names: pd.Series, output_dir: Path) 
 
 
 def _output_results2_csv(all_df: pd.DataFrame, team_dfs: Iterable[tuple[str, pd.DataFrame]], output_dir: Path) -> None:
-    """write to results2.csv:
-    - each row is a team (1st row is all team)
-    - each column: mean1, median1, std1...mean_n, median_n, std_n (n data-stats)
-    - skip non-numeric data-stats (name, team, nationality...) 
-    """
     print('Finding Means, Medians and Stds...')
 
     values = ['median', 'mean', 'std']
     group_dfs = [('all', all_df)] + list(team_dfs)
     result = pd.DataFrame(
-        df.agg(values)             # index = ['median', 'mean', 'std'], columns = data-stats
-          .T                       # index = data-stats, columns = ['median', 'mean', 'std'] 
-          .stack()                 # -> Series: median1, mean1, std1, median2...
-          .reset_index(drop=True)  # remove index
+        df.agg(values).T.stack().reset_index(drop=True)  
         for _, df in group_dfs
     )
     result.columns = [
@@ -68,11 +55,6 @@ def _config_ax(ax: plt.Axes, data: pd.Series) -> None:
     ax.tick_params(colors='white')
 
 def _plot_figure(all_data: pd.Series, teams_data: Iterable[tuple[str, pd.Series]]) -> plt.Figure:
-    """return Figure of subplots
-    - 1st row: all_df hist
-    - remain rows: team_dfs hists
-    """
-    
     # 20 teams hists + all hist = 21
     rows = cols = 5
     fig = plt.figure(figsize=(18, 9), facecolor='black')
@@ -99,10 +81,6 @@ def _plot_figure(all_data: pd.Series, teams_data: Iterable[tuple[str, pd.Series]
     return fig
 
 def _output_histograms(all_df: pd.DataFrame, team_dfs: list[tuple[str, pd.DataFrame]], output_dir: Path) -> None:
-    """save a .svg for each data-stat
-    each .svg has a histogram of all player + histograms of each team
-    skip non-numeric data-stats (name, team, nationality...) 
-    """
     print('Plotting Histograms...')
 
     hists_dir = output_dir / 'histograms'
@@ -122,6 +100,8 @@ def _output_histograms(all_df: pd.DataFrame, team_dfs: list[tuple[str, pd.DataFr
     print(f'\r[{count}/{count}] Done                                   ')
     print('Output to histograms/*svg')
 
+
+# frozenset
 
 BAD_DATA_STATS = {
     'cards_yellow',
@@ -149,11 +129,6 @@ def calc_score(series: pd.Series) -> float:
     return series.mean()
 
 def _output_best_teams_txt(team_dfs: Iterable[tuple[str, pd.DataFrame]], output_dir: Path) -> None:
-    """write a best_teams.txt
-    - 1st column: data-stats
-    - 2nd column: best team names
-    - last row: the best team overall
-    """
     print('Finding the Best Team for each Data-Stat and Overall...')
 
     scores_df = pd.DataFrame(

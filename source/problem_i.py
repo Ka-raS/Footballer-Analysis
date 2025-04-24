@@ -114,8 +114,6 @@ def _convert_type(text: str) -> Data:
     return text
 
 def _get_players_from_team(team: str, url: str, minutes_minimum: int) -> Iterable[list[Data]]:
-    """return players data-stats in TABLES_DATA_STATS"""
-
     response = requests.get(url)
     response.raise_for_status()
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -124,7 +122,7 @@ def _get_players_from_team(team: str, url: str, minutes_minimum: int) -> Iterabl
     # str: name
     players: dict[str, list[Data]] = {}
 
-    # filter player with minutes > minutes_minimum
+    # add player with minutes > minutes_minimum
     for tr in soup.select(f'table#stats_playing_time_9 > tbody > tr'):
         name = tr.th.text
         td = tr.select_one('td[data-stat="minutes"]')
@@ -132,7 +130,7 @@ def _get_players_from_team(team: str, url: str, minutes_minimum: int) -> Iterabl
         if minutes and minutes > minutes_minimum:
             players[name] = [name, team]
     
-    # find remaining players data-stats
+    # find data-stats
     ds_count = 2 # [name, team]
     for table_id, dstats_target in TABLES_DATA_STATS.items():
         ds_count += len(dstats_target)
@@ -160,8 +158,6 @@ def _get_players_from_team(team: str, url: str, minutes_minimum: int) -> Iterabl
     return players.values()
 
 def _get_team_name_and_urls() -> list[tuple[str, str]]:
-    """return team names + urls"""
-
     url = 'https://fbref.com/en/comps/9/2024-2025/2024-2025-Premier-League-Stats'
     response = requests.get(url)
     response.raise_for_status()
@@ -176,11 +172,6 @@ def _get_team_name_and_urls() -> list[tuple[str, str]]:
     ]
 
 def get_premier_league_players() -> pd.DataFrame:
-    """return DataFrame:
-    - each row is a player
-    - each column is a data-stat
-    """
-
     request_sleep = 6.0
     print('Scraping fbref.com...')
     print(f'Sleep / Request: {request_sleep} seconds')
