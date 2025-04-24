@@ -1,0 +1,72 @@
+                       data-stat             team
+0                          games        Liverpool
+1                   games_starts        Brentford
+2                        minutes        Liverpool
+3                          goals        Liverpool
+4                        assists        Liverpool
+5                   cards_yellow  Manchester City
+6                      cards_red   Leicester City
+7                             xg        Liverpool
+8                      xg_assist        Liverpool
+9            progressive_carries  Manchester City
+10            progressive_passes        Liverpool
+11   progressive_passes_received        Liverpool
+12                   goals_per90  Manchester City
+13                 assists_per90        Liverpool
+14                      xg_per90      Aston Villa
+15               xg_assist_per90          Chelsea
+16        gk_goals_against_per90   Leicester City
+17                   gk_save_pct      Bournemouth
+18           gk_clean_sheets_pct      Aston Villa
+19              gk_pens_save_pct          Everton
+20           shots_on_target_pct  Nott'ham Forest
+21         shots_on_target_per90      Bournemouth
+22                goals_per_shot  Manchester City
+23         average_shot_distance  Nott'ham Forest
+24              passes_completed        Liverpool
+25                    passes_pct  Manchester City
+26         passes_total_distance        Liverpool
+27              passes_pct_short  Manchester City
+28             passes_pct_medium  Manchester City
+29               passes_pct_long  Manchester City
+30                assisted_shots        Liverpool
+31       passes_into_final_third        Liverpool
+32      passes_into_penalty_area        Liverpool
+33     crosses_into_penalty_area           Fulham
+34                           sca        Liverpool
+35                     sca_per90        Liverpool
+36                           gca        Liverpool
+37                     gca_per90        Liverpool
+38                       tackles   Crystal Palace
+39                   tackles_won   Crystal Palace
+40                    challenges   Crystal Palace
+41               challenges_lost   Crystal Palace
+42                        blocks   Crystal Palace
+43                 blocked_shots        Brentford
+44                blocked_passes   Crystal Palace
+45                 interceptions      Bournemouth
+46                       touches        Liverpool
+47          touches_def_pen_area        Brentford
+48               touches_def_3rd        Brentford
+49               touches_mid_3rd        Liverpool
+50               touches_att_3rd  Manchester City
+51          touches_att_pen_area        Liverpool
+52                      take_ons          Arsenal
+53              take_ons_won_pct        Liverpool
+54          take_ons_tackled_pct         West Ham
+55                       carries  Manchester City
+56  carries_progressive_distance  Manchester City
+57      carries_into_final_third  Manchester City
+58     carries_into_penalty_area  Manchester City
+59                   miscontrols      Southampton
+60                  dispossessed     Ipswich Town
+61               passes_received        Liverpool
+62                         fouls  Manchester City
+63                        fouled    Newcastle Utd
+64                      offsides         Brighton
+65                       crosses           Fulham
+66               ball_recoveries      Bournemouth
+67                   aerials_won        Brentford
+68                  aerials_lost  Manchester City
+69               aerials_won_pct      Southampton
+70                       overall        Liverpool
