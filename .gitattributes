@@ -1,6 +1,1 @@
-*.txt text
-*.csv text
-*.html text
-*.pdf binary
-
-archives/*.html linguist-documentation
+archives/* linguist-documentation

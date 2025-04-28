@@ -1,4 +1,3 @@
-from pathlib import Path
 from collections.abc import Iterable
 
 import numpy as np
@@ -7,8 +6,24 @@ import matplotlib.pyplot as plt
 from matplotlib import gridspec
 
 
-def _output_top_3_txt(all_df: pd.DataFrame, names: pd.Series, output_dir: Path) -> None:
-    print('Finding the 3 Highests and 3 Lowests of each Data-Stat...')
+HIST_STATS = [
+    'goals_per90', 'assists_per90', 'xg_per90', 'blocks', 'blocked_shots', 'blocked_passes'
+]
+NEUTRAL_STATS = [
+    'age', 'games', 'games_starts', 'minutes', 'fouled'
+]
+BAD_STATS = {
+    'cards_yellow', 'cards_red', 'gk_goals_against_per90' 'challenges_lost',
+    'take_ons_tackled_pct', 'miscontrols', 'dispossessed', 'fouls', 'offsides', 'aerials_lost'
+}
+
+
+def find_top3_bottom3(players_df: pd.DataFrame) -> pd.DataFrame:
+    """return DataFrame: 
+    - 6 columns for 3 highests and 3 lowests
+    - each row is a stat
+    """
+    names = players_df['name']
 
     def find_6players(series: pd.Series) -> list[str]:
         players6 = pd.concat([series.nlargest(3), series.nsmallest(3)])
@@ -18,144 +33,116 @@ def _output_top_3_txt(all_df: pd.DataFrame, names: pd.Series, output_dir: Path) 
             for i, data in players6.items()
         ]
 
-    result = all_df.apply(find_6players).T
-    result.columns = ['1st highest', '2nd highest', '3rd highest', '1st lowest', '2nd lowest', '3rd lowest']
-    result.reset_index(names='data-stat', inplace=True)
-
-    with open(output_dir / 'top_3.txt', 'w', encoding='utf-8') as txt:
-        txt.write(result.to_string(na_rep='N/a'))
-    print('Output to top_3.txt')
+    num_df = players_df.select_dtypes('number')
+    result = num_df.apply(find_6players).T
+    result.columns = ['1st Highest', '2nd Highest', '3rd Highest', '1st Lowest', '2nd Lowest', '3rd Lowest']
+    result.reset_index(names='Statistic', inplace=True)
+    return result
 
 
-def _output_results2_csv(all_df: pd.DataFrame, team_dfs: Iterable[tuple[str, pd.DataFrame]], output_dir: Path) -> None:
-    print('Finding Means, Medians and Stds...')
+def find_teams_mean_median_std(players_df: pd.DataFrame) -> pd.DataFrame:
+    """return DataFrame:
+    - 3 columns each is a mean, median, std of a stat
+    - each row is a team
+    """
+    numeric_df = players_df.select_dtypes('number')
+    num_stats = numeric_df.columns
+    team_dfs = players_df.groupby('team')[num_stats]
+    group_dfs = [('All', numeric_df)] + list(team_dfs)
 
     values = ['median', 'mean', 'std']
-    group_dfs = [('all', all_df)] + list(team_dfs)
     result = pd.DataFrame(
-        df.agg(values).T.stack().reset_index(drop=True)  
-        for _, df in group_dfs
+        df.agg(values).T.stack().rename(group)
+        for group, df in group_dfs
     )
     result.columns = [
-        f'{value} of {dstat}'
-        for dstat in all_df.columns
+        f'{value.capitalize()} of {stat}'
+        for stat in num_stats
             for value in values
     ]
-    result.insert(0, 'team', [group for group, _ in group_dfs])
-
-    result.to_csv(output_dir / 'results2.csv', na_rep='N/a', encoding='utf-8')
-    print('Output to results2.csv')
+    result.reset_index(names='', inplace=True)
+    return result
 
 
-def _config_ax(ax: plt.Axes, data: pd.Series) -> None:
-    ax.hist(data, color='white', edgecolor='black')
-    ax.set_facecolor('black')
+def _config_axe(axe: plt.Axes, data: pd.Series, bins: Iterable[float]) -> None:
+    axe.hist(data, bins, color='white', edgecolor='black')
+    axe.set_facecolor('black')
     for side in ('bottom', 'left'):
-        ax.spines[side].set_color('white')
-    ax.tick_params(colors='white')
+        axe.spines[side].set_color('white')
+    axe.tick_params(colors='white')
 
-def _plot_figure(all_data: pd.Series, teams_data: Iterable[tuple[str, pd.Series]]) -> plt.Figure:
+def _make_histograms_figure(combined_data: pd.Series, teams_data: list[str, pd.Series]) -> plt.Figure:
     # 20 teams hists + all hist = 21
     rows = cols = 5
-    fig = plt.figure(figsize=(18, 9), facecolor='black')
-    gs = gridspec.GridSpec(rows, cols, fig)
+    figure = plt.figure(figsize=(16, 9), facecolor='black')
+    grid_spec = gridspec.GridSpec(rows, cols, figure)
+    bins = np.histogram_bin_edges(combined_data)
 
-    # all_data
-    ax_all = fig.add_subplot(gs[0, cols // 2])
-    ax_all.set_title('all', color='white')
-    _config_ax(ax_all, all_data)
+    # combined_data hist in 1st row
+    axe_combined = figure.add_subplot(grid_spec[0, cols // 2])
+    axe_combined.set_title('All', color='white')
+    _config_axe(axe_combined, combined_data, bins)
 
-    # teams_data
-    is_ax0 = True
-    for (r, c), (team, data) in zip(np.ndindex(rows - 1, cols), teams_data):
-        # skip r = 0
-        if is_ax0:
-            is_ax0 = False
-            ax = ax0 = fig.add_subplot(gs[r + 1, c]) 
+    # teams_data hists in remain rows
+    # skip r = 0
+    coords = [
+        (r + 1, c)
+        for r, c in np.ndindex(rows - 1, cols)
+    ]
+    is_axe0 = True
+    for (r, c), (team, data) in zip(coords, teams_data):
+        if is_axe0:
+            is_axe0 = False
+            axe = axe0 = figure.add_subplot(grid_spec[r, c]) 
         else:
-            ax = fig.add_subplot(gs[r + 1, c], sharex=ax0, sharey=ax0)
-        ax.set_title(team, color='white')
-        _config_ax(ax, data)
+            axe = figure.add_subplot(grid_spec[r, c], sharex=axe0, sharey=axe0)
+        axe.set_title(team, color='white')
+        _config_axe(axe, data, bins)
 
-    fig.tight_layout()
-    return fig
+    figure.suptitle('X: Value, Y: Frequency', color='white')
+    figure.tight_layout()
+    return figure
 
-def _output_histograms(all_df: pd.DataFrame, team_dfs: list[tuple[str, pd.DataFrame]], output_dir: Path) -> None:
-    print('Plotting Histograms...')
-
-    hists_dir = output_dir / 'histograms'
-    hists_dir.mkdir(exist_ok=True)
-    # dstats = all_df.columns
-    dstats = ['goals_per90', 'assists_per90', 'xg_per90', 'blocks', 'blocked_shots', 'blocked_passes']
-    count = len(dstats)
-
-    # for i, dstat in enumerate(all_df.columns):
-    for i, dstat in enumerate(dstats):
-        print(f'\r[{i}/{count}] Data-Stat: {dstat}                 ', end='')
-        teams_data = ((team, df[dstat]) for team, df in team_dfs)
-        fig = _plot_figure(all_df[dstat], teams_data)
-        fig.savefig(hists_dir / f'{i}. {dstat}.svg')
-        plt.close(fig)
-
-    print(f'\r[{count}/{count}] Done                                   ')
-    print('Output to histograms/*svg')
+def plot_teams_histograms(players_df: pd.DataFrame) -> list[tuple[str, plt.Figure]]:
+    """return list of (stat, figure)
+    - each figure is for a stat
+    - in figure: multiple histograms for each individual team and all team combined
+    """
+    result: list[tuple[str, plt.Figure]] = []
+    for stat in HIST_STATS:
+        combined_data = players_df[stat]
+        teams_data = players_df.groupby('team')[stat]
+        figure = _make_histograms_figure(combined_data, teams_data)
+        result.append((stat, figure))
+    return result
 
 
-# frozenset
-
-BAD_DATA_STATS = {
-    'cards_yellow',
-    'cards_red',
-    'gk_goals_against_per90'
-    'challenges_lost',
-    'take_ons_tackled_pct',
-    'miscontrols',
-    'dispossessed',
-    'fouls',
-    'offsides',
-    'aerials_lost'
-}
-
-NEUTRAL_DATA_STATS = {
-    'games',
-    'games_starts',
-    'minutes',
-    'fouled'
-}
-
-def calc_score(series: pd.Series) -> float:
-    if series.name in BAD_DATA_STATS:
+def _calc_score(series: pd.Series) -> float:
+    if series.name in BAD_STATS:
         return -series.mean()
     return series.mean()
 
-def _output_best_teams_txt(team_dfs: Iterable[tuple[str, pd.DataFrame]], output_dir: Path) -> None:
-    print('Finding the Best Team for each Data-Stat and Overall...')
+def find_best_teams(players_df: pd.DataFrame) -> pd.DataFrame:
+    """"return DataFrame
+    - 2 columns: 'team name' and 'statistic'
+    - each row is a team name
+    """
+    numeric_stats = players_df.select_dtypes('number').columns
+    team_dfs = players_df.groupby('team')[numeric_stats]
 
+    # find best team of each statistic
     scores_df = pd.DataFrame(
-        df.apply(calc_score).rename(team) 
+        df.apply(_calc_score).rename(team) 
         for team, df in team_dfs
     )
     best_teams = scores_df.idxmax()
-    score_sum = scores_df.drop(columns=NEUTRAL_DATA_STATS).sum(axis='columns')
-    best_team = score_sum.idxmax()
-
     result = pd.DataFrame(
         zip(scores_df.columns, best_teams), 
         columns=['data-stat', 'team']
     )
-    result.loc[len(result)] = ('overall', best_team)
-    
-    with open(output_dir / 'best_teams.txt', 'w', encoding='utf-8') as txt:
-        txt.write(result.to_string())
-    print('Output to best_teams.txt')
-    print(f'The Best Performing Team is {best_team}')
 
-
-def solve(players: pd.DataFrame, output_dir: Path) -> None:
-    all_df = players.select_dtypes('number')
-    team_dfs = players.groupby('team')[all_df.columns]
-
-    _output_top_3_txt(all_df, players['name'], output_dir)
-    _output_results2_csv(all_df, team_dfs, output_dir)
-    _output_histograms(all_df, team_dfs, output_dir)
-    _output_best_teams_txt(team_dfs, output_dir)
+    # find best Overall team
+    essentials_df = scores_df.drop(columns=NEUTRAL_STATS)
+    best_team = essentials_df.sum(axis='columns').idxmax()
+    result.loc[len(result)] = ('Overall', best_team)
+    return result
