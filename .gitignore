@@ -3,6 +3,6 @@
 output/
 source/__pycache__/
 test.ipynb
-archives
+archives/
 
 OK Computer

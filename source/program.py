@@ -45,6 +45,9 @@ def _solve_problem_ii(players_df: pd.DataFrame) -> None:
     best_teams_df.to_csv(II_DIR / 'best_teams.csv', na_rep='N/a', encoding='utf-8')
     print('Output best_teams.csv')
 
+    best_team = best_teams_df.iloc[-1]['team']
+    print(f'The Best Performing Team Is {best_team}')
+
     plt.close('all')
 
 def _solve_problem_iii(players_df: pd.DataFrame) -> None: 

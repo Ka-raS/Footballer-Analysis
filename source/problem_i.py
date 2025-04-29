@@ -1,6 +1,3 @@
-__all__ = ['get_premier_league_players']
-
-
 from collections.abc import Iterable
 
 import bs4
