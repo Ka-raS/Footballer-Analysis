@@ -1,8 +1,7 @@
-from collections.abc import Iterable
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib import ticker
 from matplotlib import gridspec
 
 
@@ -29,13 +28,13 @@ def find_top3_bottom3(players_df: pd.DataFrame) -> pd.DataFrame:
         players6 = pd.concat([series.nlargest(3), series.nsmallest(3)])
         return [
             np.nan if pd.isna(data)
-            else f'{names.loc[i]} - {data}'
+            else names.loc[i]
             for i, data in players6.items()
         ]
 
     numeric_df = players_df.select_dtypes('number')
     result = numeric_df.apply(find_6players).T
-    result.columns = ['top 1st', 'top 2nd', 'top 3rd', 'bottom 1st', 'bottom 2nd', 'bottom 3rd']
+    result.columns = ['top 1', 'top 2', 'top 3', 'bottom 1', 'bottom 2', 'bottom 3']
     result.reset_index(names='statistic', inplace=True)
     return result
 
@@ -67,56 +66,30 @@ def find_teams_mean_median_std(players_df: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
-def _config_axe(axe: plt.Axes, data: pd.Series, bins: Iterable[float]) -> None:
-    axe.hist(data, bins, color='white', edgecolor='black')
-    axe.set_facecolor('black')
-    for side in ('bottom', 'left'):
-        axe.spines[side].set_color('white')
-    axe.tick_params(colors='white')
+def _make_histograms_figure(df: pd.DataFrame) -> plt.Figure:
+    # len(HIST_STATS) = 6
+    rows = 2
+    cols = 3
 
-def _make_histograms_figure(combined_data: pd.Series, teams_data: list[str, pd.Series]) -> plt.Figure:
-    # 20 teams hists + all hist = 21
-    rows = cols = 5
-    figure = plt.figure(figsize=(16, 9), facecolor='black')
-    grid_spec = gridspec.GridSpec(rows, cols, figure)
-    bins = np.histogram_bin_edges(combined_data)
+    for i, (stat, data) in enumerate(df.items(), start=1):
+        plt.subplot(rows, cols, i)
+        plt.hist(data)
+        plt.title(stat)
 
-    # combined_data hist in 1st row
-    axe_combined = figure.add_subplot(grid_spec[0, cols // 2])
-    axe_combined.set_title('All', color='white')
-    _config_axe(axe_combined, combined_data, bins)
+    return plt.gcf()
 
-    # teams_data hists in remain rows
-    # skip r = 0
-    coords = [
-        (r + 1, c)
-        for r, c in np.ndindex(rows - 1, cols)
-    ]
-    is_axe0 = True
-    for (r, c), (team, data) in zip(coords, teams_data):
-        if is_axe0:
-            is_axe0 = False
-            axe = axe0 = figure.add_subplot(grid_spec[r, c]) 
-        else:
-            axe = figure.add_subplot(grid_spec[r, c], sharex=axe0, sharey=axe0)
-        axe.set_title(team, color='white')
-        _config_axe(axe, data, bins)
-
-    figure.suptitle('x: value, y: frequency', color='white')
-    figure.tight_layout()
-    return figure
-
-def plot_teams_histograms(players_df: pd.DataFrame) -> list[tuple[str, plt.Figure]]:
-    """return list of (stat, figure)
-    - each figure is for a stat
-    - in figure: multiple histograms for each individual team and all team combined
+def plot_stats_histograms(players_df: pd.DataFrame) -> list[tuple[str, plt.Figure]]:
+    """return list of (team name, figure)
+    - each figure is for a team (first figure is all team combined)
+    - in figure: histograms for each stat
     """
     result: list[tuple[str, plt.Figure]] = []
-    for stat in HIST_STATS:
-        combined_data = players_df[stat]
-        teams_data = players_df.groupby('team', dropna=False)[stat]
-        figure = _make_histograms_figure(combined_data, teams_data)
-        result.append((stat, figure))
+    all_player = _make_histograms_figure(players_df[HIST_STATS])
+    result.append(('All', all_player))
+
+    for team, df in players_df.groupby('team'):
+        figure = _make_histograms_figure(df[HIST_STATS])
+        result.append((team, figure))
     return result
 
 

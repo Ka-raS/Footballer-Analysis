@@ -4,12 +4,15 @@ import bs4
 import numpy as np
 import pandas as pd
 from selenium import webdriver
-from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import NoSuchDriverException
 
 
-FBREF_PREMIER_URL = 'https://fbref.com/en/comps/9/2024-2025/2024-2025-Premier-League-Stats'
-TEAM_TABLE_ID = 'results2024-202591_overall'
 MINUTES_PLAYED_ABOVE = 90
+FBREF_PREMIER_URL = 'https://fbref.com/en/comps/9/2024-2025/2024-2025-Premier-League-Stats/'
+
+# Premier League Table
+TEAM_TABLE_ID = 'results2024-202591_overall'
 
 # table ids + stat lists
 TABLES_STATS = [
@@ -61,31 +64,16 @@ TABLES_STATS = [
 ] # TABLES_DATA_STATS
 
 
-def _get_team_name_and_urls(driver: WebDriver) -> list[tuple[str, str]]:
-    """return list of (team_name, team_url)"""
-
-    driver.get(FBREF_PREMIER_URL)
-    soup = bs4.BeautifulSoup(driver.page_source, 'html.parser')
-
-    # Premier League Table
-    selector = f'table#{TEAM_TABLE_ID} > tbody > tr > td[data-stat="team"] > a'
-    return [
-        (a.text, 'https://fbref.com' + a['href'])
-        for a in soup.select(selector)
-    ]
-
-def _get_players_from_team(team: str, url: str, driver: WebDriver) -> Iterable[list[str]]:
+def _get_players_from_team(team: str, soup: bs4.BeautifulSoup) -> Iterable[list[str]]:
     """return team members data in TABLES_STATS"""
+    # str: name
+    players: dict[str, list[str]] = {} 
 
-    driver.get(url)
-    soup = bs4.BeautifulSoup(driver.page_source, 'html.parser')
-    players: dict[str, list[str]] = {} # str: name
-
-    # add players with minutes > minutes_minimum
-    for tr in soup.select(f'table#stats_playing_time_9 > tbody > tr[data-row]:not([class])'):
-        name = tr.th.text
+    # add players with minutes > 90
+    for tr in soup.select('table#stats_playing_time_9 > tbody > tr:not(.thead)'):
+        name = tr.th.get_text(strip=True)
         td = tr.select_one('td[data-stat="minutes"]')
-        minutes = int('0' + td.text.replace(',', '')) # '1,234' -> '01234'
+        minutes = int('0' + td.text.replace(',', '')) # '1,234' -> 01234
         if minutes > MINUTES_PLAYED_ABOVE:
             players[name] = [name, team]
     
@@ -95,12 +83,12 @@ def _get_players_from_team(team: str, url: str, driver: WebDriver) -> Iterable[l
         stat_count += len(stat_targets)
 
         # players in table
-        for tr in soup.select(f'table#{table_id} > tbody > tr'):
-            name = tr.th.text
+        for tr in soup.select(f'table#{table_id} > tbody > tr:not(.thead)'):
+            name = tr.th.get_text(strip=True)
             if name not in players:
                 continue
             data_found = {
-                td['data-stat']: td.text
+                td['data-stat']: td.get_text(strip=True)
                 for td in tr.select('td[data-stat]')
             }
             players[name].extend(
@@ -124,6 +112,7 @@ def _process_data(players: list[list[str]]) -> pd.DataFrame:
             for stat in stat_list 
     ]
     df = pd.DataFrame(players, columns=columns)
+    df.drop_duplicates(['name'], keep='first', inplace=True)
     df.replace('', np.nan)
     
     # '23-123' -> 23.337
@@ -131,35 +120,46 @@ def _process_data(players: list[list[str]]) -> pd.DataFrame:
         years, days = map(int, age.split('-'))
         return round(years + days / 365, ndigits=3)
     
-    df['age'] = df['age'].apply(convert_age)
-    df['minutes'] = df['minutes'].str.replace(',', '') # '1,234 -> 1234'
-    df['nationality'] = df['nationality'].str[-3:] # 'eng ENG' -> 'ENG'
-
-
     def to_numeric(series: pd.Series) -> pd.Series:
         try:
             return pd.to_numeric(series)
-        except Exception:
-            return series
+        except ValueError:
+            return series.astype('string')
+
+    df['age'] = df['age'].apply(convert_age)
+    df['minutes'] = df['minutes'].str.replace(',', '') # '1,234 -> 1234'
+    df['nationality'] = df['nationality'].str[-3:] # 'eng ENG' -> 'ENG'
     df = df.apply(to_numeric)
     return df
 
-def get_premier_league_players() -> pd.DataFrame:
+def scrape_premier_league_players() -> pd.DataFrame:
     """scrape data from fbref.com.
+    - get players with minutes > 90
     - each row is a player
     - each column is a stat
     """
-    players: list[list[str]] = []
-
     try:
         driver = webdriver.Firefox()
-    except Exception:
+    except NoSuchDriverException:
         driver = webdriver.Chrome()
+    driver.get(FBREF_PREMIER_URL)
+    soup = bs4.BeautifulSoup(driver.page_source, 'html.parser')
 
-    team_infos = _get_team_name_and_urls(driver)
-    for team, url in team_infos:
-        players.extend(_get_players_from_team(team, url, driver))
+    selector = f'table#{TEAM_TABLE_ID} > tbody > tr > td[data-stat="team"] > a'
+    team_urls = [
+        (a.get_text(strip=True), 'https://fbref.com' + a['href'])
+        for a in soup.select(selector)
+    ]
+
+    players: list[list[str]] = []
+    for team, url in team_urls:
+        driver.get(url)
+        WebDriverWait(driver, 30).until(
+            lambda d: d.execute_script("return document.readyState") == "complete" 
+        ) # load html 
+        soup = bs4.BeautifulSoup(driver.page_source, 'html.parser')
+        players.extend(_get_players_from_team(team, soup))
+
     driver.close()
-
     df = _process_data(players)
     return df
