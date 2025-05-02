@@ -22,6 +22,13 @@
     ```
 
 3. Run Program:
+
+    Web Scraping
     ```bash
     python3 -m source
+    ```
+
+    Archives Scraping
+    ```bash
+    python3 -m source --archives
     ```

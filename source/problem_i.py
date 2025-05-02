@@ -1,3 +1,4 @@
+from pathlib import Path
 from collections.abc import Iterable
 
 import bs4
@@ -7,6 +8,8 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchDriverException
 
+
+ARCHIVES_DIR = Path(__file__).parents[1] / 'archives/fbref.com'
 
 MINUTES_PLAYED_ABOVE = 90
 FBREF_PREMIER_URL = 'https://fbref.com/en/comps/9/2024-2025/2024-2025-Premier-League-Stats/'
@@ -64,16 +67,43 @@ TABLES_STATS = [
 ] # TABLES_DATA_STATS
 
 
+def _get_teams_page_sources() -> Iterable[tuple[str, bs4.BeautifulSoup]]:
+    """return generator of (team name, page source)"""
+    try:
+        driver = webdriver.Firefox()
+    except NoSuchDriverException:
+        driver = webdriver.Chrome()
+    driver.get(FBREF_PREMIER_URL)
+    soup = bs4.BeautifulSoup(driver.page_source, 'html.parser')
+
+    for a in soup.select(f'table#{TEAM_TABLE_ID} > tbody > tr > td[data-stat="team"] > a'):
+        team = a.get_text(strip=True)
+        url = 'https://fbref.com' + a['href']
+        driver.get(url)
+        yield team, soup
+    driver.close()
+
+def _get_teams_page_sources_archived() -> Iterable[tuple[str, bs4.BeautifulSoup]]:
+    """return generator of (team name, page source)"""
+    for html_dir in ARCHIVES_DIR.glob('*.html'):
+        team = html_dir.stem
+        if team == 'Premier League':
+            continue
+        with open(html_dir, 'r', encoding='utf-8') as html:
+            soup = bs4.BeautifulSoup(html.read(), 'html.parser')
+        yield team, soup
+
 def _get_players_from_team(team: str, soup: bs4.BeautifulSoup) -> Iterable[list[str]]:
     """return team members data in TABLES_STATS"""
     # str: name
     players: dict[str, list[str]] = {} 
 
     # add players with minutes > 90
-    for tr in soup.select('table#stats_playing_time_9 > tbody > tr:not(.thead)'):
+    standard_stats_id = TABLES_STATS[0][0]
+    for tr in soup.select(f'table#{standard_stats_id} > tbody > tr:not(.thead)'):
         name = tr.th.get_text(strip=True)
         td = tr.select_one('td[data-stat="minutes"]')
-        minutes = int('0' + td.text.replace(',', '')) # '1,234' -> 01234
+        minutes = int('0' + td.get_text(strip=True).replace(',', '')) # '1,234' -> 01234
         if minutes > MINUTES_PLAYED_ABOVE:
             players[name] = [name, team]
     
@@ -113,6 +143,7 @@ def _process_data(players: list[list[str]]) -> pd.DataFrame:
     ]
     df = pd.DataFrame(players, columns=columns)
     df.drop_duplicates(['name'], keep='first', inplace=True)
+    df.reset_index(drop=True, inplace=True)
     df.replace('', np.nan)
     
     # '23-123' -> 23.337
@@ -132,34 +163,17 @@ def _process_data(players: list[list[str]]) -> pd.DataFrame:
     df = df.apply(to_numeric)
     return df
 
-def scrape_premier_league_players() -> pd.DataFrame:
+def scrape_premier_league_players(from_archives: bool) -> pd.DataFrame:
     """scrape data from fbref.com.
     - get players with minutes > 90
     - each row is a player
     - each column is a stat
     """
-    try:
-        driver = webdriver.Firefox()
-    except NoSuchDriverException:
-        driver = webdriver.Chrome()
-    driver.get(FBREF_PREMIER_URL)
-    soup = bs4.BeautifulSoup(driver.page_source, 'html.parser')
-
-    selector = f'table#{TEAM_TABLE_ID} > tbody > tr > td[data-stat="team"] > a'
-    team_urls = [
-        (a.get_text(strip=True), 'https://fbref.com' + a['href'])
-        for a in soup.select(selector)
-    ]
-
     players: list[list[str]] = []
-    for team, url in team_urls:
-        driver.get(url)
-        WebDriverWait(driver, 30).until(
-            lambda d: d.execute_script("return document.readyState") == "complete" 
-        ) # load html 
-        soup = bs4.BeautifulSoup(driver.page_source, 'html.parser')
+    if not from_archives:
+        teams_soups = _get_teams_page_sources()
+    else:
+        teams_soups = _get_teams_page_sources_archived()
+    for team, soup in teams_soups:
         players.extend(_get_players_from_team(team, soup))
-
-    driver.close()
-    df = _process_data(players)
-    return df
+    return _process_data(players)

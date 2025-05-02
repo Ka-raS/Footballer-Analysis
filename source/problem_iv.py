@@ -1,3 +1,6 @@
+from pathlib import Path
+from collections.abc import Iterable
+
 import bs4
 import pandas as pd
 from selenium import webdriver
@@ -5,7 +8,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchDriverException
 from selenium.webdriver.support import expected_conditions as EC
+from sklearn.linear_model import LinearRegression
 
+
+ARCHIVES_DIR = Path(__file__).parents[1] / 'archives/footballtransfers.com'
 
 MINUTES_PLAYED_ABOVE = 900
 TABLE_PAGES = range(1, 23)
@@ -44,14 +50,15 @@ UNIQUE_NAMES = {
     'Will Smallbone': 'William Smallbone'
 }
 
+RANDOM_STATE = 37
+MODEL_TEST_SIZE = 0.25
 
-def _get_transfer_values(names: set[str]) -> list[tuple[str, float]]:
-    """return list of (name, transfer value - Million €)"""
+
+def _get_tables_page_sources() -> Iterable[bs4.BeautifulSoup]:
     try:
         driver = webdriver.Firefox()
     except NoSuchDriverException:
         driver = webdriver.Chrome()
-    result: list[tuple[str, float]] = []
 
     for page in TABLE_PAGES:
         url = f'{FBTRANSFERS_PREMIER_URL}{page}'    
@@ -63,27 +70,45 @@ def _get_transfer_values(names: set[str]) -> list[tuple[str, float]]:
             ))
         ) # load javascript
         soup = bs4.BeautifulSoup(driver.page_source, 'html.parser')
-
-        for tr in soup.select('tbody#player-table-body > tr'):
-            a = tr.select_one('td.td-player > div > div.text > a')
-            name = a.get_text(strip=True)
-            name = UNIQUE_NAMES.get(name, name)
-            if name not in names:
-                continue
-            span = tr.select_one('td.text-center > span')
-            value = float(span.get_text(strip=True)[1:-1]) # '€12.3M' -> 12.3
-            result.append((name, value)) 
-    
+        yield soup
     driver.close()
-    return result
 
-def scrape_players_transfer_values(players_df: pd.DataFrame) -> pd.DataFrame:
+def _get_tables_page_sources_archived() -> Iterable[bs4.BeautifulSoup]:
+    for html_dir in ARCHIVES_DIR.glob('*.html'):
+        with open(html_dir, 'r', encoding='utf-8') as html:
+            soup = bs4.BeautifulSoup(html.read(), 'html.parser')
+        yield soup
+
+def _get_transfer_values_from_table(names: set[str], soup: bs4.BeautifulSoup) -> Iterable[tuple[str, float]]:
+    """return generator of (name, transfer value - Million €)"""
+
+    for tr in soup.select('tbody#player-table-body > tr'):
+        a = tr.select_one('td.td-player > div > div.text > a')
+        name = a.get_text(strip=True)
+        name = UNIQUE_NAMES.get(name, name)
+        if name not in names:
+            continue
+        span = tr.select_one('td.text-center > span')
+        value = float(span.get_text(strip=True)[1:-1]) # '€12.3M' -> 12.3
+        yield name, value 
+
+def scrape_players_transfer_values(players_df: pd.DataFrame, from_archives: bool) -> pd.DataFrame:
     """Scrape data from footballtransfers.com
     - get players with minutes > 900
     - 2 columns: player name, transfer value
     """
-    names = players_df.loc[players_df['minutes'] > MINUTES_PLAYED_ABOVE, 'name']
-    name_transfer_values = _get_transfer_values(set(names))
-    df = pd.DataFrame(name_transfer_values, columns=['name', 'transfer_value'])
+    names_values: list[tuple[str, float]] = []
+    names = set(players_df.loc[players_df['minutes'] > MINUTES_PLAYED_ABOVE, 'name'])
+
+    if not from_archives:
+        tables_soups = _get_tables_page_sources()
+    else:
+        tables_soups = _get_tables_page_sources_archived()
+
+    for soup in tables_soups:
+        names_values.extend(_get_transfer_values_from_table(names, soup))
+    df = pd.DataFrame(names_values, columns=['name', 'transfer_value'])
     return df
 
+
+def select_features(players_df: pd.DataFrame, transfer_values: pd.DataFrame) -> 
