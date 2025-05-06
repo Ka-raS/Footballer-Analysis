@@ -8,19 +8,20 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import silhouette_score
 
 
-N_CLUSTERS_OPTIMAL = 8
-
 def process_data(players_df: pd.DataFrame) -> npt.NDArray[np.number]:
     df = players_df.select_dtypes('number').fillna(0)
     scaled = StandardScaler().fit_transform(df)
     return scaled
 
+# Problem III.1
+
+GAP_REF_COUNT = 10
+
 def _find_gap(X: np.ndarray, kmeans: KMeans) -> float:
     inertia = kmeans.inertia_
-    ref_count = 10
     inertia_refs = []
 
-    for _ in range(ref_count):
+    for _ in range(GAP_REF_COUNT):
         random_X = np.random.uniform(low=X.min(axis=0), high=X.max(axis=0), size=X.shape)
         kmeans.fit(random_X)
         inertia_refs.append(kmeans.inertia_)
@@ -49,13 +50,9 @@ def plot_clusters_evaluation_graphs(X: npt.NDArray[np.number]) -> plt.Figure:
     fig, axes = plt.subplots(1, 3, figsize=(16, 9))
     xticks = k_values[::2]
 
-    evals = (inertias, scores, gaps)
-    ylabels = ('ineria', 'score', 'gap')
-    titles = (
-        'inertias elbow method', 
-        'silhouette scores method', 
-        'gap statistics method'
-    )
+    evals = [inertias, scores, gaps]
+    ylabels = ['ineria', 'score', 'gap']
+    titles = ['inertias elbow method', 'silhouette scores method', 'gap statistics method']
 
     for ax, eval, ylabel, title in zip(axes, evals, ylabels, titles):
         ax: plt.Axes
@@ -69,6 +66,10 @@ def plot_clusters_evaluation_graphs(X: npt.NDArray[np.number]) -> plt.Figure:
     fig.tight_layout()
     return fig
 
+# Problem III.2
+
+N_CLUSTERS_OPTIMAL = 8
+
 def grouping_players(X: npt.NDArray[np.number], names: npt.NDArray[np.str_]) -> pd.DataFrame:
     """param 'names' is 1 dimention"""
     kmeans = KMeans(N_CLUSTERS_OPTIMAL, random_state=37)
@@ -77,6 +78,8 @@ def grouping_players(X: npt.NDArray[np.number], names: npt.NDArray[np.str_]) -> 
         'name': names, 
         'cluster': clusters
     })
+
+# Problem III.3
 
 def scatter_clusters_2d(X: npt.NDArray[np.number], clusters: npt.NDArray[np.int_]) -> plt.Figure:
     """param 'clusters' is 1 dimention"""

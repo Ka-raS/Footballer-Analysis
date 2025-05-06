@@ -61,14 +61,20 @@ def _solve_problem_iii(players_df: pd.DataFrame) -> None:
 
     plt.close('all')
 
-def _solve_problem_iv(players_df: pd.DataFrame, transfer_values: pd.DataFrame) -> None: 
-    features = problem_iv.select_features(players_df, transfer_values)
+def _solve_problem_iv(players_df: pd.DataFrame, transfer_values: pd.DataFrame) -> None:
+    transfer_values.to_csv(IV_DIR / 'transfer_values_scraped.csv', na_rep='N/a', encoding='utf-8')
+    print('Output transfer_values_scraped.csv')
+
+    X, y = problem_iv.process_data(players_df, transfer_values)
+
+    return X, y
+    # features = problem_iv.select_features(players_df, transfer_values)
     
-    model = problem_iv.make_transfers_eval_model()
+    # model = problem_iv.make_transfers_eval_model()
     
 
 def run(from_archives: bool) -> None:
-    for dir in [OUTPUT_DIR, I_DIR, II_DIR, III_DIR, IV_DIR, HISTS_DIR]:
+    for dir in (OUTPUT_DIR, I_DIR, II_DIR, III_DIR, IV_DIR, HISTS_DIR):
         dir.mkdir(exist_ok=True)
 
     players_df = problem_i.scrape_premier_league_players(from_archives)
