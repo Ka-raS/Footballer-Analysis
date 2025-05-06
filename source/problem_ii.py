@@ -1,6 +1,11 @@
+from pathlib import Path
+
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
+II_DIR = Path('output/problem_ii')
+HISTS_DIR = II_DIR / 'histograms'
 
 # Problem II.1
 
@@ -41,6 +46,7 @@ def find_teams_mean_median_std(players_df: pd.DataFrame) -> pd.DataFrame:
     combined_values.name = 'All'
     
     result = pd.concat([pd.DataFrame([combined_values]), teams_values])
+    result = result.round(3)
     result.columns = [
         f'{value} of {stat}'
         for stat in numeric_stats
@@ -98,3 +104,25 @@ def find_best_teams(players_df: pd.DataFrame) -> pd.DataFrame:
     result = pd.DataFrame(stat_best_teams, columns=['team'])
     result = result.reset_index(names='statistic') # curr index is stats
     return result
+
+
+def solve(players_df: pd.DataFrame) -> None:
+    top_3 = find_top3_bottom3(players_df)
+    with open(II_DIR / 'top_3.txt', 'w', encoding='utf-8') as txt:
+        txt.write(top_3.to_string(na_rep='N/a'))
+    print('Output top_3.txt')
+
+    teams_values = find_teams_mean_median_std(players_df)
+    teams_values.to_csv(II_DIR / 'results2.csv', na_rep='N/a', encoding='utf-8')
+    print('Output results2.csv')
+
+    team_dfs = [('All', players_df)] + list(players_df.groupby('team'))
+    for team, df in team_dfs:
+        fig = make_histograms(df)
+        fig.savefig(HISTS_DIR / f'{team}.svg')
+        plt.close(fig)
+    print('Output histograms/*.svg')
+
+    best_teams_df = find_best_teams(players_df)
+    best_teams_df.to_csv(II_DIR / 'best_teams.csv', na_rep='N/a', encoding='utf-8')
+    print('Output best_teams.csv')

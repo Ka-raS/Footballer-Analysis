@@ -5,10 +5,10 @@ import bs4
 import numpy as np
 import pandas as pd
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchDriverException
 
 
+II_DIR = Path('output/problem_i')
 ARCHIVES_DIR = Path(__file__).parents[1] / 'archives/fbref.com'
 
 MINUTES_PLAYED_ABOVE = 90
@@ -66,8 +66,7 @@ TABLES_STATS = [
 )
 ] # TABLES_DATA_STATS
 
-
-def _get_teams_page_sources() -> Iterable[tuple[str, bs4.BeautifulSoup]]:
+def get_teams_page_sources() -> Iterable[tuple[str, bs4.BeautifulSoup]]:
     """return generator of (team name, page source)"""
     try:
         driver = webdriver.Firefox()
@@ -80,10 +79,12 @@ def _get_teams_page_sources() -> Iterable[tuple[str, bs4.BeautifulSoup]]:
         team = a.get_text(strip=True)
         url = 'https://fbref.com' + a['href']
         driver.get(url)
+        soup = bs4.BeautifulSoup(driver.page_source, 'html.parser')
         yield team, soup
+
     driver.close()
 
-def _get_teams_page_sources_archived() -> Iterable[tuple[str, bs4.BeautifulSoup]]:
+def get_teams_page_sources_archived() -> Iterable[tuple[str, bs4.BeautifulSoup]]:
     """return generator of (team name, page source)"""
     for html_dir in ARCHIVES_DIR.glob('*.html'):
         team = html_dir.stem
@@ -93,14 +94,15 @@ def _get_teams_page_sources_archived() -> Iterable[tuple[str, bs4.BeautifulSoup]
             soup = bs4.BeautifulSoup(html.read(), 'html.parser')
         yield team, soup
 
-def _get_players_from_team(team: str, soup: bs4.BeautifulSoup) -> Iterable[list[str]]:
+def get_players_from_team(team: str, soup: bs4.BeautifulSoup) -> Iterable[list[str]]:
     """return team members data in TABLES_STATS"""
     # str: name
     players: dict[str, list[str]] = {} 
 
     # add players with minutes > 90
-    standard_stats_id = TABLES_STATS[0][0]
-    for tr in soup.select(f'table#{standard_stats_id} > tbody > tr:not(.thead)'):
+    standard_table_id = TABLES_STATS[0][0]
+    list_tr = soup.select(f'table#{standard_table_id} > tbody > tr:not(.thead)')
+    for tr in list_tr:
         name = tr.th.get_text(strip=True)
         td = tr.select_one('td[data-stat="minutes"]')
         minutes = int('0' + td.get_text(strip=True).replace(',', '')) # '1,234' -> 01234
@@ -133,7 +135,7 @@ def _get_players_from_team(team: str, soup: bs4.BeautifulSoup) -> Iterable[list[
 
     return players.values()
 
-def _process_data(players: list[list[str]]) -> pd.DataFrame:
+def process_data(players: list[list[str]]) -> pd.DataFrame:
     # sort by name
     players.sort()
     columns = ['name', 'team'] + [
@@ -170,10 +172,14 @@ def scrape_premier_league_players(from_archives: bool) -> pd.DataFrame:
     - each column is a stat
     """
     players: list[list[str]] = []
-    if not from_archives:
-        teams_soups = _get_teams_page_sources()
-    else:
-        teams_soups = _get_teams_page_sources_archived()
+    teams_soups = get_teams_page_sources_archived() if from_archives else get_teams_page_sources()
     for team, soup in teams_soups:
-        players.extend(_get_players_from_team(team, soup))
-    return _process_data(players)
+        players.extend(get_players_from_team(team, soup)) 
+    return process_data(players)
+
+
+def solve(players_df: pd.DataFrame) -> None:
+    II_DIR.mkdir(parents=True, exist_ok=True)
+
+    players_df.to_csv(II_DIR / 'results.csv', na_rep='N/a', encoding='utf-8')
+    print('Output results.csv')

@@ -8,10 +8,12 @@ import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import NoSuchDriverException
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchDriverException
 from sklearn.linear_model import LinearRegression
 
+
+IV_DIR = Path('output/problem_iv')
 
 # Problem IV.1
 
@@ -34,7 +36,7 @@ UNIQUE_NAMES = {
     'Rayan Aït Nouri': 'Rayan Aït-Nouri', 'Victor Kristiansen': 'Victor Bernth Kristiansen', 'Will Smallbone': 'William Smallbone'
 }
 
-def _get_tables_page_sources() -> Iterable[bs4.BeautifulSoup]:
+def get_tables_page_sources() -> Iterable[bs4.BeautifulSoup]:
     try:
         driver = webdriver.Firefox()
     except NoSuchDriverException:
@@ -53,13 +55,13 @@ def _get_tables_page_sources() -> Iterable[bs4.BeautifulSoup]:
         yield soup
     driver.close()
 
-def _get_tables_page_sources_archived() -> Iterable[bs4.BeautifulSoup]:
+def get_tables_page_sources_archived() -> Iterable[bs4.BeautifulSoup]:
     for html_dir in ARCHIVES_DIR.glob('*.html'):
         with open(html_dir, 'r', encoding='utf-8') as html:
             soup = bs4.BeautifulSoup(html.read(), 'html.parser')
         yield soup
 
-def _get_transfer_values_from_table(names: set[str], soup: bs4.BeautifulSoup) -> Iterable[tuple[str, int]]:
+def get_transfer_values_from_table(names: set[str], soup: bs4.BeautifulSoup) -> Iterable[tuple[str, int]]:
     """return generator of (name, value)"""
 
     for tr in soup.select('tbody#player-table-body > tr'):
@@ -80,32 +82,38 @@ def scrape_players_transfer_values(players_df: pd.DataFrame, from_archives: bool
     """
     names_values: list[tuple[str, int]] = []
     names = set(players_df.loc[players_df['minutes'] > MINUTES_MINIMUM, 'name'])
-
-    if not from_archives:
-        soups = _get_tables_page_sources()
-    else:
-        soups = _get_tables_page_sources_archived()
+    soups = get_tables_page_sources_archived() if from_archives else get_tables_page_sources()
 
     for soup in soups:
-        names_values.extend(_get_transfer_values_from_table(names, soup))
+        names_values.extend(get_transfer_values_from_table(names, soup))
     
     # sort by name
     names_values.sort(key=lambda x: x[0])
-    df = pd.DataFrame(names_values, columns=['name', 'value'])
+    df = pd.DataFrame(names_values, columns=['name', 'value (€)'])
     return df
 
 # Problem IV.2
 
 def process_data(players_df: pd.DataFrame, transfer_values: pd.DataFrame) -> tuple[pd.DataFrame, npt.NDArray[np.int_]]:
-    merged = pd.merge(players_df, transfer_values, on='name') # trust issue hits hard
-    merged = merged.dropna(subset=['value'])
+    merged = pd.merge(players_df, transfer_values, on='name') # both sorted but trust issue hits hard
+    merged = merged.dropna(subset=['value (€)'])
 
-    y = merged['value'].to_numpy()
+    y = merged['value (€)'].to_numpy()
     X = merged.select_dtypes('number')
-    X = X.drop(columns='value')
+    X = X.drop(columns='value (€)')
     X = X.fillna(0)
     X = pd.get_dummies(X, dtype=int, drop_first=True) # one-hot encoding
     
     return X, y
 
-# def select_features(players_df: pd.DataFrame, transfer_values: pd.DataFrame) -> 
+
+def solve(players_df: pd.DataFrame, transfer_values: pd.DataFrame) -> None:
+    transfer_values.to_csv(IV_DIR / 'transfer_values_scraped.csv', na_rep='N/a', encoding='utf-8')
+    print('Output transfer_values_scraped.csv')
+
+    X, y = process_data(players_df, transfer_values)
+    return
+    return X, y
+    # features = problem_iv.select_features(players_df, transfer_values)
+    
+    # model = problem_iv.make_transfers_eval_model()

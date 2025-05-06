@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
@@ -8,8 +10,11 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import silhouette_score
 
 
+III_DIR = Path('output/problem_iii')
+
 def process_data(players_df: pd.DataFrame) -> npt.NDArray[np.number]:
-    df = players_df.select_dtypes('number').fillna(0)
+    df = players_df.select_dtypes('number')
+    df = df.fillna(0)
     scaled = StandardScaler().fit_transform(df)
     return scaled
 
@@ -17,7 +22,7 @@ def process_data(players_df: pd.DataFrame) -> npt.NDArray[np.number]:
 
 GAP_REF_COUNT = 10
 
-def _find_gap(X: np.ndarray, kmeans: KMeans) -> float:
+def find_gap(X: np.ndarray, kmeans: KMeans) -> float:
     inertia = kmeans.inertia_
     inertia_refs = []
 
@@ -36,16 +41,16 @@ def plot_clusters_evaluation_graphs(X: npt.NDArray[np.number]) -> plt.Figure:
     - Gap Statistics
     """
     k_values = range(2, 21)
-    inertias = [] # inertias elbow 
-    scores = [] # silhouette scores 
-    gaps = [] # gap statistics 
+    inertias = []  
+    scores = []  
+    gaps = [] 
 
     for k in k_values:
         kmeans = KMeans(k, random_state=37).fit(X)
         inertias.append(kmeans.inertia_)
         scores.append(silhouette_score(X, kmeans.labels_))
-        gaps.append(_find_gap(X, kmeans))
-
+        gaps.append(find_gap(X, kmeans))
+    
     # plot graphs
     fig, axes = plt.subplots(1, 3, figsize=(16, 9))
     xticks = k_values[::2]
@@ -62,13 +67,15 @@ def plot_clusters_evaluation_graphs(X: npt.NDArray[np.number]) -> plt.Figure:
         ax.set_xticks(xticks)
         ax.set_xlabel('n clusters')
         ax.set_ylabel(ylabel)
+        for ax, eval in zip(axes, evals):
+            ax.plot() 
 
     fig.tight_layout()
     return fig
 
 # Problem III.2
 
-N_CLUSTERS_OPTIMAL = 8
+N_CLUSTERS_OPTIMAL = 3
 
 def grouping_players(X: npt.NDArray[np.number], names: npt.NDArray[np.str_]) -> pd.DataFrame:
     """param 'names' is 1 dimention"""
@@ -90,3 +97,21 @@ def scatter_clusters_2d(X: npt.NDArray[np.number], clusters: npt.NDArray[np.int_
     plt.title('2D cluster of the data points')
     plt.tight_layout()
     return fig
+
+
+def solve(players_df: pd.DataFrame) -> None: 
+    X = process_data(players_df)
+
+    graphs = plot_clusters_evaluation_graphs(X)
+    graphs.savefig(III_DIR / 'clusters_evaluation.svg')
+    print('Output clusters_evaluation.svg')
+
+    groups = grouping_players(X, players_df['name'].to_numpy())
+    groups.to_csv(III_DIR / 'player_groups.csv')
+    print('Output player_groups.csv')
+
+    pca_2d = scatter_clusters_2d(X, groups['cluster'].to_numpy())
+    pca_2d.savefig(III_DIR / 'pca_clusters_2d.svg')
+    print('Output pca_clusters_2d.svg')
+
+    plt.close('all')
