@@ -1,2 +1,1 @@
-archives\fbref\*.html linguist-documentation
-archives\footballtransfer\*.html linguist-documentation
+archives\* linguist-vendored
