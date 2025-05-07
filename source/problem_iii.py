@@ -1,40 +1,46 @@
 from pathlib import Path
 
 import numpy as np
-import numpy.typing as npt
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import silhouette_score
+from sklearn.preprocessing import StandardScaler, power_transform
+from sklearn.metrics import (
+    silhouette_score, 
+    calinski_harabasz_score, 
+    davies_bouldin_score
+)
 
 
 III_DIR = Path('output/problem_iii')
 
-def process_data(players_df: pd.DataFrame) -> npt.NDArray[np.number]:
-    df = players_df.select_dtypes('number')
-    df = df.fillna(0)
-    scaled = StandardScaler().fit_transform(df)
-    return scaled
-
 # Problem III.1
 
-GAP_REF_COUNT = 10
+GK_STATS = [
+    'gk_goals_against_per90', 'gk_save_pct', 'gk_clean_sheets_pct', 'gk_pens_save_pct'
+]
 
-def find_gap(X: np.ndarray, kmeans: KMeans) -> float:
-    inertia = kmeans.inertia_
-    inertia_refs = []
+def process_data(players_df: pd.DataFrame) -> pd.DataFrame: 
+    """fillna, yeo-johnson unskew, standardize"""
 
-    for _ in range(GAP_REF_COUNT):
-        random_X = np.random.uniform(low=X.min(axis=0), high=X.max(axis=0), size=X.shape)
-        kmeans.fit(random_X)
-        inertia_refs.append(kmeans.inertia_)
+    df = players_df.copy()
 
-    gap = np.log(np.mean(inertia_refs)) - np.log(inertia)
-    return gap
+    # fillna mean for goal keepers' goal keeper stats
+    df.loc[df['position'] == 'GK', GK_STATS].fillna(df[GK_STATS].mean(), inplace=True)
+    df = players_df.select_dtypes('number')
 
-def plot_clusters_evaluation_graphs(X: npt.NDArray[np.number]) -> plt.Figure:
+    # fillna 0 for outfielder's goal keeper stats
+    df[GK_STATS] = df[GK_STATS].fillna(0)
+    df = df.fillna(df.mean())
+
+    data = power_transform(df, method='yeo-johnson') # unskew
+    data = StandardScaler().fit_transform(data)
+    return pd.DataFrame(data, columns=df.columns)
+
+# Problem III.2
+
+def plot_clusters_evaluation_graphs(X: pd.DataFrame) -> plt.Figure:
     """plot 3 graphs:
     - Inertias Elbow
     - Silhouette Scores
@@ -42,75 +48,84 @@ def plot_clusters_evaluation_graphs(X: npt.NDArray[np.number]) -> plt.Figure:
     """
     k_values = range(2, 21)
     inertias = []  
-    scores = []  
-    gaps = [] 
+    silhouettes = []  
+    harabaszs = [] 
+    bouldins = []
 
     for k in k_values:
         kmeans = KMeans(k, random_state=37).fit(X)
         inertias.append(kmeans.inertia_)
-        scores.append(silhouette_score(X, kmeans.labels_))
-        gaps.append(find_gap(X, kmeans))
+        silhouettes.append(silhouette_score(X, kmeans.labels_))
+        harabaszs.append(calinski_harabasz_score(X, kmeans.labels_))
+        bouldins.append(davies_bouldin_score(X, kmeans.labels_))
     
     # plot graphs
-    fig, axes = plt.subplots(1, 3, figsize=(16, 9))
-    xticks = k_values[::2]
+    fig, axes = plt.subplots(2, 2, figsize=(16, 9))
 
-    evals = [inertias, scores, gaps]
-    ylabels = ['ineria', 'score', 'gap']
-    titles = ['inertias elbow method', 'silhouette scores method', 'gap statistics method']
+    evals = [inertias, silhouettes, harabaszs, bouldins]
+    ylabels = ['ineria', 'score', 'score', 'score']
+    titles = [
+        'Inertias Elbow method', 'Silhouette Scores Method', 
+        'Calinski Harabasz Score Method', 'Davies Bouldin Score Method'
+    ]
 
-    for ax, eval, ylabel, title in zip(axes, evals, ylabels, titles):
+    for ax, eval, ylabel, title in zip(axes.flat, evals, ylabels, titles):
         ax: plt.Axes
         ax.plot(k_values, eval, marker='.', color='black')
 
         ax.set_title(title)
-        ax.set_xticks(xticks)
+        ax.set_xticks(k_values)
         ax.set_xlabel('n clusters')
         ax.set_ylabel(ylabel)
-        for ax, eval in zip(axes, evals):
-            ax.plot() 
 
     fig.tight_layout()
     return fig
 
-# Problem III.2
-
-N_CLUSTERS_OPTIMAL = 3
-
-def grouping_players(X: npt.NDArray[np.number], names: npt.NDArray[np.str_]) -> pd.DataFrame:
-    """param 'names' is 1 dimention"""
-    kmeans = KMeans(N_CLUSTERS_OPTIMAL, random_state=37)
-    clusters = kmeans.fit_predict(X)
-    return pd.DataFrame({
-        'name': names, 
-        'cluster': clusters
-    })
-
 # Problem III.3
 
-def scatter_clusters_2d(X: npt.NDArray[np.number], clusters: npt.NDArray[np.int_]) -> plt.Figure:
-    """param 'clusters' is 1 dimention"""
-    fig = plt.figure(figsize=(16, 9))
-    pca = PCA(2).fit_transform(X)
+N_CLUSTERS_OPTIMAL = 4
 
-    plt.scatter(pca[:, 0], pca[:, 1], c=clusters)
-    plt.title('2D cluster of the data points')
+def grouping_players(X: pd.DataFrame) -> tuple[np.ndarray, pd.DataFrame]:
+    kmeans = KMeans(N_CLUSTERS_OPTIMAL, random_state=37)
+    clusters = kmeans.fit_predict(X)
+    centers_df = pd.DataFrame(kmeans.cluster_centers_, columns=X.columns)
+    return clusters, centers_df
+
+def scatter_pca_clusters_2d(X: pd.DataFrame, clusters: np.ndarray, centers_df: pd.DataFrame) -> plt.Figure:
+    pca = PCA(2)
+    X_pca = pca.fit_transform(X)
+    centers_pca = pca.transform(centers_df)
+
+    plt.figure(figsize=(16, 9))
+    plt.scatter(X_pca[:, 0], X_pca[:, 1], c=clusters, cmap='tab10', s=100)
+    plt.scatter(centers_pca[:, 0], centers_pca[:, 1], c='black', s=1000, alpha=0.5)
+    plt.title('2D Clusters Of Data Points')
     plt.tight_layout()
-    return fig
+    return plt.gcf()
 
 
 def solve(players_df: pd.DataFrame) -> None: 
+    III_DIR.mkdir(parents=True, exist_ok=True)
+
     X = process_data(players_df)
+    X.to_csv(III_DIR / 'dataset.csv', encoding='utf-8') # no nan
+    print('Output dataset.csv')
+
+    stats_skews = pd.DataFrame(X.skew(), columns=['skew']).reset_index(names='statistic')
+    stats_skews.to_csv(III_DIR / 'stats_skews.csv', encoding='utf-8')
+    print('Output stats_skews.csv')
 
     graphs = plot_clusters_evaluation_graphs(X)
     graphs.savefig(III_DIR / 'clusters_evaluation.svg')
     print('Output clusters_evaluation.svg')
 
-    groups = grouping_players(X, players_df['name'].to_numpy())
-    groups.to_csv(III_DIR / 'player_groups.csv')
+    clusters, centers_df = grouping_players(X)
+
+    clusters_df = pd.DataFrame({'name': players_df['name'], 'cluster': clusters})
+    clusters_df.to_csv(III_DIR / 'player_groups.csv')
     print('Output player_groups.csv')
 
-    pca_2d = scatter_clusters_2d(X, groups['cluster'].to_numpy())
+    pca_2d = scatter_pca_clusters_2d(X, clusters, centers_df)
     pca_2d.savefig(III_DIR / 'pca_clusters_2d.svg')
     print('Output pca_clusters_2d.svg')
 

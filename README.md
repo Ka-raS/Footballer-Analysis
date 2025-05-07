@@ -1,4 +1,6 @@
 # School Assignment: Python
+    A Simple
+
 
 ## Dependencies
 - [**Python 3.10.0**](https://www.python.org/downloads/release/python-3100/)
@@ -16,19 +18,22 @@
     cd School-Assignment-1
     ```
 
-2. Install Dependencies:
+2. Install 3rd-Party Packages:
     ```bash
     pip3 install -r requirements.txt
     ```
 
-3. Run Program:
+    Alternatively, if you want to install packages in the latest version
+    ```bash
+    pip3 install selenium, bs4, pandas, matplotlib, scikit-learn
+    ```
 
-    Web Scraping
+3. Run Program:
     ```bash
     python3 -m source
     ```
 
-    Archives Scraping
+    Alternatively, this will scrape from the archives and produce the same results like in the report
     ```bash
     python3 -m source --archives
     ```

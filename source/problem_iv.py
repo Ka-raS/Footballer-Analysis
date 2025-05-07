@@ -3,14 +3,17 @@ from collections.abc import Iterable
 
 import bs4
 import numpy as np
-import numpy.typing as npt
 import pandas as pd
+import matplotlib.pyplot as plt
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchDriverException
-from sklearn.linear_model import LinearRegression
+from sklearn.decomposition import PCA
+from sklearn.linear_model import LassoCV
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import r2_score, mean_squared_error
 
 
 IV_DIR = Path('output/problem_iv')
@@ -61,7 +64,7 @@ def get_tables_page_sources_archived() -> Iterable[bs4.BeautifulSoup]:
             soup = bs4.BeautifulSoup(html.read(), 'html.parser')
         yield soup
 
-def get_transfer_values_from_table(names: set[str], soup: bs4.BeautifulSoup) -> Iterable[tuple[str, int]]:
+def get_transfer_values_from_table(names: set[str], soup: bs4.BeautifulSoup) -> Iterable[tuple[str, float]]:
     """return generator of (name, value)"""
 
     for tr in soup.select('tbody#player-table-body > tr'):
@@ -71,8 +74,7 @@ def get_transfer_values_from_table(names: set[str], soup: bs4.BeautifulSoup) -> 
         if name not in names:
             continue
         span = tr.select_one('td.text-center > span')
-        value = span.get_text(strip=True)[1:-1] # '€12.3M' -> '12.3'
-        value = int(float(value) * 1_000_000)
+        value = float(span.get_text(strip=True)[1:-1]) # '€12.3M' -> 12.3
         yield name, value 
 
 def scrape_players_transfer_values(players_df: pd.DataFrame, from_archives: bool) -> pd.DataFrame:
@@ -80,40 +82,101 @@ def scrape_players_transfer_values(players_df: pd.DataFrame, from_archives: bool
     - get players with minutes > 900
     - 2 columns: player name, value
     """
-    names_values: list[tuple[str, int]] = []
+    names_values: list[tuple[str, float]] = []
     names = set(players_df.loc[players_df['minutes'] > MINUTES_MINIMUM, 'name'])
     soups = get_tables_page_sources_archived() if from_archives else get_tables_page_sources()
-
     for soup in soups:
         names_values.extend(get_transfer_values_from_table(names, soup))
     
     # sort by name
     names_values.sort(key=lambda x: x[0])
-    df = pd.DataFrame(names_values, columns=['name', 'value (€)'])
+    df = pd.DataFrame(names_values, columns=['name', 'value (€1M)'])
     return df
 
 # Problem IV.2
 
-def process_data(players_df: pd.DataFrame, transfer_values: pd.DataFrame) -> tuple[pd.DataFrame, npt.NDArray[np.int_]]:
-    merged = pd.merge(players_df, transfer_values, on='name') # both sorted but trust issue hits hard
-    merged = merged.dropna(subset=['value (€)'])
+GK_STATS = [
+    'gk_goals_against_per90', 'gk_save_pct', 'gk_clean_sheets_pct', 'gk_pens_save_pct'
+]
 
-    y = merged['value (€)'].to_numpy()
-    X = merged.select_dtypes('number')
-    X = X.drop(columns='value (€)')
-    X = X.fillna(0)
-    X = pd.get_dummies(X, dtype=int, drop_first=True) # one-hot encoding
+def process_data(players_df: pd.DataFrame) -> pd.DataFrame:
+    """fillna, one-hot encode, standardize"""
+    df = players_df.drop(columns=['name'])
+
+    # fillna mean for goal keepers' goal keeper stats
+    df.loc[df['position'] == 'GK', GK_STATS].fillna(df[GK_STATS].mean(), inplace=True)
+    # fillna 0 for outfielder's goal keeper stats
+    df[GK_STATS] = df[GK_STATS].fillna(0)
+
+    df = pd.get_dummies(df, dtype=int, drop_first=True) # one-hot encoding    
+    df = df.fillna(df.mean())
+    data = StandardScaler().fit_transform(df)
+    return pd.DataFrame(data, columns=df.columns)
+
+def scatter_pca_2d(X: pd.DataFrame, y: pd.Series) -> plt.Figure:
+    X_pca = PCA(1).fit_transform(X)[:, 0]
+
+    # fitting line
+    coefs = np.polyfit(X_pca, y, 1)
+    p = np.poly1d(coefs)
+
+    plt.figure(figsize=(16, 9))
+    plt.plot(X_pca, p(X_pca), label='fitting line', c='red', linewidth=10)
+    plt.scatter(X_pca, y, c='black', s=100)
+
+    plt.title('PCA 2D Map')
+    plt.xlabel('X')
+    plt.ylabel('y', rotation=45)
+    plt.tight_layout()
+    return plt.gcf()
+
+def perform_tests(X: pd.DataFrame, y: pd.Series) -> pd.DataFrame:...
+
+def predict_transfer_values(X_all: pd.DataFrame, values_scraped_df: pd.DataFrame, 
+                            players_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     
-    return X, y
+    X = X_all.loc[players_df['name'].isin(values_scraped_df['name'])].reset_index(drop=True)
+    y = values_scraped_df['value (€1M)']
+    y = y.rename('value true (€1M)')
 
+    model = LassoCV(cv=10, max_iter=20000).fit(X, y)
+    y_pred_all = model.predict(X_all)
 
-def solve(players_df: pd.DataFrame, transfer_values: pd.DataFrame) -> None:
-    transfer_values.to_csv(IV_DIR / 'transfer_values_scraped.csv', na_rep='N/a', encoding='utf-8')
-    print('Output transfer_values_scraped.csv')
+    values = pd.DataFrame({
+        'name': players_df['name'].values,
+        'value predict (€1M)': y_pred_all
+    }).merge(values_scraped_df, on='name', how='left')
+    values['value predict (€1M)'] = values['value predict (€1M)'].round(3)
 
-    X, y = process_data(players_df, transfer_values)
-    return
-    return X, y
-    # features = problem_iv.select_features(players_df, transfer_values)
-    
-    # model = problem_iv.make_transfers_eval_model()
+    feature_importances = pd.DataFrame({
+        'Feature': X.columns,
+        'Importance': np.abs(model.coef_)
+    }).sort_values('Importance', ascending=False)
+
+    return values, feature_importances
+
+def solve(players_df: pd.DataFrame, values_scraped_df: pd.DataFrame) -> None:
+    IV_DIR.mkdir(parents=True, exist_ok=True)
+
+    # all player dataset
+    X_all = process_data(players_df)
+
+    # drop players without transfer value
+    X = X_all.loc[players_df['name'].isin(values_scraped_df['name'])].reset_index(drop=True)
+    y = values_scraped_df['value (€1M)']
+
+    pca_2d = scatter_pca_2d(X, y)
+    pca_2d.savefig(IV_DIR / 'pca_2d.svg')
+    print('Output pca_2d.svg')
+
+    # test_result = perform_tests(X, y)
+    # test_result.to_csv(IV_DIR / 'test_result.csv', encoding='utf-8')
+    # print('Output test_result.csv')
+
+    values, feature_importance = predict_transfer_values(X_all, values_scraped_df, players_df)
+    values.to_csv(IV_DIR / 'transfer_values_predicted.csv', na_rep='N/a', encoding='utf-8')
+    print('Output transfer_values_predicted.csv')
+    feature_importance.to_csv(IV_DIR / 'feature_importance.csv', encoding='utf-8')
+    print('Output feature_importance.csv')
+
+    plt.close('all')

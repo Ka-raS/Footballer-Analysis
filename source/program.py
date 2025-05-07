@@ -12,5 +12,5 @@ def run(from_archives: bool) -> None:
     problem_ii.solve(players_df)
     problem_iii.solve(players_df)
     
-    transfer_values = problem_iv.scrape_players_transfer_values(players_df, from_archives)
-    problem_iv.solve(players_df, transfer_values)
+    transfer_values_df = problem_iv.scrape_players_transfer_values(players_df, from_archives)
+    problem_iv.solve(players_df, transfer_values_df)

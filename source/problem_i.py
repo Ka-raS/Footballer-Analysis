@@ -66,6 +66,12 @@ TABLES_STATS = [
 )
 ] # TABLES_DATA_STATS
 
+STATS = ['name', 'team'] + [
+    stat
+    for _, stat_list in TABLES_STATS
+        for stat in stat_list 
+]
+
 def get_teams_page_sources() -> Iterable[tuple[str, bs4.BeautifulSoup]]:
     """return generator of (team name, page source)"""
     try:
@@ -138,12 +144,7 @@ def get_players_from_team(team: str, soup: bs4.BeautifulSoup) -> Iterable[list[s
 def process_data(players: list[list[str]]) -> pd.DataFrame:
     # sort by name
     players.sort()
-    columns = ['name', 'team'] + [
-        stat
-        for _, stat_list in TABLES_STATS
-            for stat in stat_list 
-    ]
-    df = pd.DataFrame(players, columns=columns)
+    df = pd.DataFrame(players, columns=STATS)
     df.drop_duplicates(['name'], keep='first', inplace=True)
     df.reset_index(drop=True, inplace=True)
     df.replace('', np.nan)

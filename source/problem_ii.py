@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 II_DIR = Path('output/problem_ii')
-HISTS_DIR = II_DIR / 'histograms'
+II_HISTS_DIR = II_DIR / 'histograms'
 
 # Problem II.1
 
@@ -58,7 +58,7 @@ def find_teams_mean_median_std(players_df: pd.DataFrame) -> pd.DataFrame:
 # Problem II.3
 
 HIST_STATS = [
-    'goals_per90', 'assists_per90', 'xg_per90', 'blocks', 'blocked_shots', 'blocked_passes'
+    'goals_per90', 'passes_pct_medium', 'average_shot_distance', 'blocks', 'blocked_passes', 'gk_pens_save_pct'
 ]
 
 def make_histograms(df: pd.DataFrame) -> plt.Figure:
@@ -107,6 +107,8 @@ def find_best_teams(players_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def solve(players_df: pd.DataFrame) -> None:
+    II_HISTS_DIR.mkdir(parents=True, exist_ok=True) # include II_DIR 
+
     top_3 = find_top3_bottom3(players_df)
     with open(II_DIR / 'top_3.txt', 'w', encoding='utf-8') as txt:
         txt.write(top_3.to_string(na_rep='N/a'))
@@ -119,7 +121,7 @@ def solve(players_df: pd.DataFrame) -> None:
     team_dfs = [('All', players_df)] + list(players_df.groupby('team'))
     for team, df in team_dfs:
         fig = make_histograms(df)
-        fig.savefig(HISTS_DIR / f'{team}.svg')
+        fig.savefig(II_HISTS_DIR / f'{team}.svg')
         plt.close(fig)
     print('Output histograms/*.svg')
 
