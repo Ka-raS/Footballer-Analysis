@@ -93,7 +93,7 @@ def get_teams_page_sources() -> Iterable[tuple[str, bs4.BeautifulSoup]]:
 def get_teams_page_sources_archived() -> Iterable[tuple[str, bs4.BeautifulSoup]]:
     """return generator of (team name, page source)"""
     for html_dir in ARCHIVES_DIR.glob('*.html'):
-        team = html_dir.stem
+        team = html_dir.stem.replace('_', ' ')
         if team == 'Premier League':
             continue
         with open(html_dir, 'r', encoding='utf-8') as html:
