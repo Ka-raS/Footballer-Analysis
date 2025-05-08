@@ -45,5 +45,5 @@ Outputs directories are displayed on terminal. Total runtime should be around 3 
 ## Screenshot
 
 <div align="center">
-  <img src="output/screenshot.png" style="max-width: 50%;"/>
+  <img src="output/screenshot.png" style="width: 50%;"/>
 </div>
