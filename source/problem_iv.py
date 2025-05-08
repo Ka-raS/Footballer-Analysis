@@ -13,6 +13,7 @@ from selenium.common.exceptions import NoSuchDriverException
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LassoCV
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils import resample
 from sklearn.metrics import r2_score, mean_squared_error
 
 
@@ -20,7 +21,7 @@ IV_DIR = Path('output/problem_iv')
 
 # Problem IV.1
 
-ARCHIVES_DIR = Path(__file__).parents[1] / 'archives/footballtransfers.com'
+ARCHIVES_DIR = Path(__file__).parents[1] / 'archives/footballtransfers'
 
 MINUTES_MINIMUM = 900
 TABLE_PAGES = range(1, 23)
@@ -121,42 +122,78 @@ def scatter_pca_2d(X: pd.DataFrame, y: pd.Series) -> plt.Figure:
     p = np.poly1d(coefs)
 
     plt.figure(figsize=(16, 9))
-    plt.plot(X_pca, p(X_pca), label='fitting line', c='red', linewidth=10)
+    plt.plot(X_pca, p(X_pca), c='red', linewidth=10)
     plt.scatter(X_pca, y, c='black', s=100)
 
     plt.title('PCA 2D Map')
-    plt.xlabel('X')
-    plt.ylabel('y', rotation=45)
+    plt.xlabel('player features')
+    plt.ylabel('transfer value')
     plt.tight_layout()
     return plt.gcf()
 
-def perform_tests(X: pd.DataFrame, y: pd.Series) -> pd.DataFrame:...
+N_SAMPLES = 10
 
-def predict_transfer_values(X_all: pd.DataFrame, values_scraped_df: pd.DataFrame, 
-                            players_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    
-    X = X_all.loc[players_df['name'].isin(values_scraped_df['name'])].reset_index(drop=True)
-    y = values_scraped_df['value (€1M)']
-    y = y.rename('value true (€1M)')
+def bootstrap_scoring(X: pd.DataFrame, y: pd.Series, model: LassoCV) -> plt.Figure:
+    """r2 score, rmse from n samples"""
+    r2_scores = []
+    rmses = []
 
-    model = LassoCV(cv=10, max_iter=20000).fit(X, y)
+    for _ in range(N_SAMPLES):
+        X_boot, y_boot = resample(X, y)
+        model.fit(X_boot, y_boot)
+        y_pred = model.predict(X)
+        r2_scores.append(r2_score(y, y_pred))
+        rmses.append(np.sqrt(mean_squared_error(y, y_pred)))
+
+    # plot
+    fig, axes = plt.subplots(1, 2, figsize=(16, 9))
+    evals = [r2_scores, rmses]
+    xlabels = ['R2 score', 'RMSE']
+
+    for ax, eval, xlabel in zip(axes, evals, xlabels):
+        ax: plt.Axes
+        ax.hist(eval, color='black', edgecolor='white')
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel('frequency')
+        ax.set_yticks(range(1 + N_SAMPLES // 3))
+
+    fig.suptitle('Bootstrap Evaluation')
+    fig.tight_layout()
+    return fig
+
+def predict_transfer_values(model: LassoCV, X_all: pd.DataFrame, values_scraped_df: pd.DataFrame, 
+                            players_df: pd.DataFrame) -> tuple[pd.DataFrame, plt.Figure]:
     y_pred_all = model.predict(X_all)
 
     values = pd.DataFrame({
-        'name': players_df['name'].values,
+        'name': players_df['name'],
         'value predict (€1M)': y_pred_all
     }).merge(values_scraped_df, on='name', how='left')
     values['value predict (€1M)'] = values['value predict (€1M)'].round(3)
 
-    feature_importances = pd.DataFrame({
-        'Feature': X.columns,
-        'Importance': np.abs(model.coef_)
-    }).sort_values('Importance', ascending=False)
+    abs_coefs, features = zip(*sorted(
+        (abs_coef, feature)
+        for abs_coef, feature in zip(np.abs(model.coef_), X_all.columns)
+            if abs_coef != 0
+    ))
 
-    return values, feature_importances
+    plt.figure(figsize=(16, 9))
+    plt.barh(features, abs_coefs, color='black', edgecolor='white')
+    plt.ylim(-0.5, len(features) - 0.5)
+    plt.title('Feature Importance')
+    plt.xlabel('absolute coefficient')
+    plt.ylabel('feature')
+    plt.tight_layout()
+
+    return values, plt.gcf()
 
 def solve(players_df: pd.DataFrame, values_scraped_df: pd.DataFrame) -> None:
     IV_DIR.mkdir(parents=True, exist_ok=True)
+    pca_2d_svg = IV_DIR / 'pca_2d.svg'
+    bootstrapping_scores_svg = IV_DIR / 'bootstrapping_scores.svg'
+    transfer_values_predicted_csv = IV_DIR / 'transfer_values_predicted.csv'
+    feature_importance_svg = IV_DIR / 'feature_importance.svg'
+    print('\nProblem IV:')
 
     # all player dataset
     X_all = process_data(players_df)
@@ -166,17 +203,21 @@ def solve(players_df: pd.DataFrame, values_scraped_df: pd.DataFrame) -> None:
     y = values_scraped_df['value (€1M)']
 
     pca_2d = scatter_pca_2d(X, y)
-    pca_2d.savefig(IV_DIR / 'pca_2d.svg')
-    print('Output pca_2d.svg')
+    pca_2d.savefig(pca_2d_svg)
+    print(pca_2d_svg)
 
-    # test_result = perform_tests(X, y)
-    # test_result.to_csv(IV_DIR / 'test_result.csv', encoding='utf-8')
-    # print('Output test_result.csv')
+    model = LassoCV(cv=10, max_iter=20000)
 
-    values, feature_importance = predict_transfer_values(X_all, values_scraped_df, players_df)
-    values.to_csv(IV_DIR / 'transfer_values_predicted.csv', na_rep='N/a', encoding='utf-8')
-    print('Output transfer_values_predicted.csv')
-    feature_importance.to_csv(IV_DIR / 'feature_importance.csv', encoding='utf-8')
-    print('Output feature_importance.csv')
+    scores = bootstrap_scoring(X, y, model)
+    scores.savefig(bootstrapping_scores_svg)
+    print(bootstrapping_scores_svg)
+
+    model.fit(X, y)
+    values, feature_importance = predict_transfer_values(model, X_all, values_scraped_df, players_df)
+
+    values.to_csv(transfer_values_predicted_csv, na_rep='N/a', encoding='utf-8')
+    print(transfer_values_predicted_csv)
+    feature_importance.savefig(feature_importance_svg)
+    print(feature_importance_svg)
 
     plt.close('all')

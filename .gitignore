@@ -1,6 +1,5 @@
 .venv/
 
-output/
 source/__pycache__/
 test.ipynb
 

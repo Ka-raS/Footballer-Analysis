@@ -1,6 +1,8 @@
-# School Assignment: Python
-    A Simple
-
+# Football Players Data Analysis
+    
+A school project involves collecting and analyzing football players statistical data from the 2024-2025 Premier League.
+The data is scraped from [FBREF](https://fbref.com/en/comps/9/2024-2025/2024-2025-Premier-League-Stats/) and [FOOTBALL TRANSFERS](https://www.footballtransfers.com/en/values/players/most-valuable-players/playing-in-uk-premier-league)
+The program runs in terminal output-only. Program total runtime should be around 3 minutes (hopefully)
 
 ## Dependencies
 - [**Python 3.10.0**](https://www.python.org/downloads/release/python-3100/)
@@ -37,3 +39,9 @@
     ```bash
     python3 -m source --archives
     ```
+
+## Screenshot
+
+<div align="center">
+  <img src="output/screenshot.png" alt="Screenshot" />
+</div>

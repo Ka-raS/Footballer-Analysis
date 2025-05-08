@@ -9,7 +9,7 @@ from selenium.common.exceptions import NoSuchDriverException
 
 
 II_DIR = Path('output/problem_i')
-ARCHIVES_DIR = Path(__file__).parents[1] / 'archives/fbref.com'
+ARCHIVES_DIR = Path(__file__).parents[1] / 'archives/fbref'
 
 MINUTES_PLAYED_ABOVE = 90
 FBREF_PREMIER_URL = 'https://fbref.com/en/comps/9/2024-2025/2024-2025-Premier-League-Stats/'
@@ -181,6 +181,8 @@ def scrape_premier_league_players(from_archives: bool) -> pd.DataFrame:
 
 def solve(players_df: pd.DataFrame) -> None:
     II_DIR.mkdir(parents=True, exist_ok=True)
+    result_csv = II_DIR / 'results.csv'
+    print('Problem I:')
 
-    players_df.to_csv(II_DIR / 'results.csv', na_rep='N/a', encoding='utf-8')
-    print('Output results.csv')
+    players_df.to_csv(result_csv, na_rep='N/a', encoding='utf-8')
+    print(result_csv)

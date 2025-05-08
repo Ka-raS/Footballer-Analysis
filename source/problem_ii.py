@@ -108,23 +108,27 @@ def find_best_teams(players_df: pd.DataFrame) -> pd.DataFrame:
 
 def solve(players_df: pd.DataFrame) -> None:
     II_HISTS_DIR.mkdir(parents=True, exist_ok=True) # include II_DIR 
+    top_3_txt = II_DIR / 'top_3.txt'
+    results2_csv = II_DIR / 'results2.csv'
+    best_teams_csv = II_DIR / 'best_teams.csv'
+    print('\nProblem II:')
 
     top_3 = find_top3_bottom3(players_df)
-    with open(II_DIR / 'top_3.txt', 'w', encoding='utf-8') as txt:
+    with open(top_3_txt, 'w', encoding='utf-8') as txt:
         txt.write(top_3.to_string(na_rep='N/a'))
-    print('Output top_3.txt')
+    print(top_3_txt)
 
     teams_values = find_teams_mean_median_std(players_df)
-    teams_values.to_csv(II_DIR / 'results2.csv', na_rep='N/a', encoding='utf-8')
-    print('Output results2.csv')
+    teams_values.to_csv(results2_csv, na_rep='N/a', encoding='utf-8')
+    print(results2_csv)
 
     team_dfs = [('All', players_df)] + list(players_df.groupby('team'))
     for team, df in team_dfs:
         fig = make_histograms(df)
         fig.savefig(II_HISTS_DIR / f'{team}.svg')
         plt.close(fig)
-    print('Output histograms/*.svg')
+    print(II_HISTS_DIR)
 
     best_teams_df = find_best_teams(players_df)
-    best_teams_df.to_csv(II_DIR / 'best_teams.csv', na_rep='N/a', encoding='utf-8')
-    print('Output best_teams.csv')
+    best_teams_df.to_csv(best_teams_csv, na_rep='N/a', encoding='utf-8')
+    print(best_teams_csv)
