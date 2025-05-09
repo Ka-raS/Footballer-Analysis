@@ -69,13 +69,12 @@ def get_transfer_values_from_table(names: set[str], soup: bs4.BeautifulSoup) -> 
     """return generator of (name, value)"""
 
     for tr in soup.select('tbody#player-table-body > tr'):
-        a = tr.select_one('td.td-player > div > div.text > a')
-        name = a.get_text(strip=True)
+        name = tr.select_one('td.td-player > span').text.strip()
         name = UNIQUE_NAMES.get(name, name)
         if name not in names:
             continue
         span = tr.select_one('td.text-center > span')
-        value = float(span.get_text(strip=True)[1:-1]) # '€12.3M' -> 12.3
+        value = float(span.text.strip()[1:-1]) # '€12.3M' -> 12.3
         yield name, value 
 
 def scrape_players_transfer_values(players_df: pd.DataFrame, from_archives: bool) -> pd.DataFrame:

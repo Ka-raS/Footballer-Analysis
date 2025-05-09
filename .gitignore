@@ -3,4 +3,11 @@
 source/__pycache__/
 test.ipynb
 
+reports/report.aux
+reports/report.fdb_latexmk
+reports/report.fls
+reports/report.log
+reports/report.synctex.gz
+reports/report.synctex(busy)
+
 OK Computer

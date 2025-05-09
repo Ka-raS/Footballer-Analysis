@@ -82,7 +82,7 @@ def get_teams_page_sources() -> Iterable[tuple[str, bs4.BeautifulSoup]]:
     soup = bs4.BeautifulSoup(driver.page_source, 'html.parser')
 
     for a in soup.select(f'table#{TEAM_TABLE_ID} > tbody > tr > td[data-stat="team"] > a'):
-        team = a.get_text(strip=True)
+        team = a.text.strip()
         url = 'https://fbref.com' + a['href']
         driver.get(url)
         soup = bs4.BeautifulSoup(driver.page_source, 'html.parser')
@@ -107,14 +107,13 @@ def get_players_from_team(team: str, soup: bs4.BeautifulSoup) -> Iterable[list[s
 
     # add players with minutes > 90
     standard_table_id = TABLES_STATS[0][0]
-    list_tr = soup.select(f'table#{standard_table_id} > tbody > tr:not(.thead)')
-    for tr in list_tr:
-        name = tr.th.get_text(strip=True)
+    for tr in soup.select(f'table#{standard_table_id} > tbody > tr:not(.thead)'):
+        name = tr.th.text.strip()
         td = tr.select_one('td[data-stat="minutes"]')
-        minutes = int('0' + td.get_text(strip=True).replace(',', '')) # '1,234' -> 01234
+        minutes = int('0' + td.text.strip().replace(',', '')) # '1,234' -> 01234
         if minutes > MINUTES_PLAYED_ABOVE:
             players[name] = [name, team]
-    
+
     # find data-stats
     stat_count = 2 # [name, team]
     for table_id, stat_targets in TABLES_STATS:
@@ -122,11 +121,11 @@ def get_players_from_team(team: str, soup: bs4.BeautifulSoup) -> Iterable[list[s
 
         # players in table
         for tr in soup.select(f'table#{table_id} > tbody > tr:not(.thead)'):
-            name = tr.th.get_text(strip=True)
+            name = tr.th.text.strip()
             if name not in players:
                 continue
             data_found = {
-                td['data-stat']: td.get_text(strip=True)
+                td['data-stat']: td.text.strip()
                 for td in tr.select('td[data-stat]')
             }
             players[name].extend(
@@ -186,3 +185,5 @@ def solve(players_df: pd.DataFrame) -> None:
 
     players_df.to_csv(result_csv, na_rep='N/a', encoding='utf-8')
     print(result_csv)
+
+scrape_premier_league_players(False)

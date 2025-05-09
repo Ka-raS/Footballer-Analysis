@@ -9,7 +9,7 @@ Outputs directories are displayed on terminal. Total runtime should be around 3 
 ## Dependencies
 - [**Python 3.10.0**](https://www.python.org/downloads/release/python-3100/)
 - [**selenium**](https://pypi.org/project/selenium/) - Get Websites' Sources
-- [**bs4**](https://pypi.org/project/bs4/) - Parse HTML
+- [**beautifulsoup4**](https://pypi.org/project/bs4/) - Parse HTML
 - [**pandas**](https://pypi.org/project/pandas/) - Data Manipulation
 - [**matplotlib**](https://pypi.org/project/matplotlib/) - Plotting Histograms And Graphs
 - [**scikit-learn**](https://pypi.org/project/scikit-learn/) - Machine Learning
@@ -22,14 +22,14 @@ Outputs directories are displayed on terminal. Total runtime should be around 3 
     cd School-Assignment-1
     ```
 
-2. Install 3rd-Party Packages:
+2. Install Package Dependencies:
     ```bash
     pip3 install -r requirements.txt
     ```
 
     Alternatively, if you want to install packages in the latest version
     ```bash
-    pip3 install selenium, bs4, pandas, matplotlib, scikit-learn
+    pip3 install selenium beautifulsoup4 pandas matplotlib scikit-learn
     ```
 
 3. Run Program:
@@ -37,9 +37,15 @@ Outputs directories are displayed on terminal. Total runtime should be around 3 
     python3 -m source
     ```
 
-    Alternatively, this will scrape from the archives and produce the same results like in the report
+    Alternatively, this will scrape from the archives and produce similar results like in the report
     ```bash
     python3 -m source --archives
+    ```
+
+Additionally, you can compile report.tex through [MikTex](https://miktex.org/download), it has no package dependencies.
+    ```bash
+    cd reports
+    pdflatex report.tex
     ```
 
 ## Screenshot

@@ -68,7 +68,7 @@ def plot_clusters_evaluation_graphs(X: pd.DataFrame) -> plt.Figure:
     evals = [inertias, silhouettes, harabaszs, bouldins]
     ylabels = ['ineria', 'score', 'score', 'score']
     titles = [
-        'Inertias Elbow method', 'Silhouette Scores Method', 
+        'Inertias Elbow Method', 'Silhouette Scores Method', 
         'Calinski Harabasz Score Method', 'Davies Bouldin Score Method'
     ]
 
