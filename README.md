@@ -43,10 +43,10 @@ Outputs directories are displayed on terminal. Total runtime should be around 3 
     ```
 
 Additionally, you can compile report.tex through [MikTex](https://miktex.org/download), it has no package dependencies.
-    ```bash
-    cd reports
-    pdflatex report.tex
-    ```
+```bash
+cd reports
+pdflatex report.tex
+```
 
 ## Screenshot
 
