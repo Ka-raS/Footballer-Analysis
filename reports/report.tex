@@ -391,10 +391,15 @@ This section can be split into three main parts:
 
 \subsubsection{Choosing a linear model}
 Estimated transfer values of a players are often influenced by that players statistics. The higher
-the stats, the higher the transfer value. If the criterias are being easy to implement, fast to train 
-and perform decently well, Linear Model is a perfect fit. More specifically, LassoCV. \\
+the stats, the higher the transfer value. \verb|pca_2d.svg| shows that, despites not having done
+features selection, the plot still resembles a clear linear pattern. \\
+
+If the criterias are being easy to implement, fast to train and perform decently well, then 
+Linear Model is a perfect fit. More specifically, LassoCV. \\
+
 Lasso can perform both regression and automatic feature selection. By adding an L1 penalty, 
 it can decrease non important features coefficients to zero. \\
+
 The difference between Lasso and LassoCV is the additional use of cross-validation to help with 
 choosing the optimal alpha parameter. Making LassoCV easy to use while still being performant. \\
 
@@ -420,13 +425,15 @@ LassoCV automatically $\alpha$ using cross-validation:
 
 \subsubsection{Prepare Dataset}
 Handling missing value N/a is the same as problem III. \\
-This time, the dataset can be One-Hot encoded.
+
+This time, the dataset can be One-Hot encoded. \\
 One-Hot Encoding is the technique to transform each categorical features values into individuals
 binary columns. For each categorical feature encoded, a column is dropped to prevent multicollinearity,
-which is important for linear models like Lasso. Even though, the number of features would increases 
-significantly, the non important features can be dropped later during features selection by LassoCV. \\
-Unlike other linear models, Lasso is sensitive to feature scales because it penalizes coefficients 
-via L1 regularization. Therefore scaling and standardization are still applied.  
+which is important for linear models like Lasso. \\
+Even though, the number of features would increases significantly, the non important ones can 
+be dropped later during features selection. \\ 
+Unlike other linear models, Lasso is sensitive to feature scales because it penalizes coefficients via 
+L1 regularization. Therefore scaling and standardization are still applied.  
 
 \subsubsection{Performing Tests}
 To assess the stability and reliability of the model, bootstrapping was selected. Bootstrapping is a 

@@ -185,5 +185,3 @@ def solve(players_df: pd.DataFrame) -> None:
 
     players_df.to_csv(result_csv, na_rep='N/a', encoding='utf-8')
     print(result_csv)
-
-scrape_premier_league_players(False)
