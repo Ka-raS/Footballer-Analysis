@@ -1,16 +1,16 @@
 from . import (
-    problem_i,
-    problem_ii,
-    problem_iii,
-    problem_iv,
+    task_i,
+    task_ii,
+    task_iii,
+    task_iv,
 )
 
 
 def run(from_archives: bool) -> None:
-    players_df = problem_i.scrape_premier_league_players(from_archives)
-    problem_i.solve(players_df)
-    problem_ii.solve(players_df)
-    problem_iii.solve(players_df)
+    players_df = task_i.scrape_premier_league_players(from_archives)
+    task_i.solve(players_df)
+    task_ii.solve(players_df)
+    task_iii.solve(players_df)
     
-    transfer_values_df = problem_iv.scrape_players_transfer_values(players_df, from_archives)
-    problem_iv.solve(players_df, transfer_values_df)
+    transfer_values_df = task_iv.scrape_players_transfer_values(players_df, from_archives)
+    task_iv.solve(players_df, transfer_values_df)

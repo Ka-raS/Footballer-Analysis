@@ -1,4 +1,4 @@
-# Football Players Data Analysis
+# Football Players Statistical Analysis
     
 A school project involves collecting and analyzing football players statistical data from the 2024-2025 Premier League.
 
@@ -42,7 +42,7 @@ Outputs directories are displayed on terminal. Total runtime should be around 3 
     python3 -m source --archives
     ```
 
-Additionally, you can compile report.tex through [MikTex](https://miktex.org/download), it has no package dependencies.
+Additionally, you can compile report.tex through [MikTex](https://miktex.org/download).
 ```bash
 cd reports
 pdflatex report.tex

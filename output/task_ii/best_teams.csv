@@ -1,0 +1,73 @@
+,statistic,team
+0,age,West Ham
+1,games,Liverpool
+2,games_starts,Crystal Palace
+3,minutes,Crystal Palace
+4,goals,Liverpool
+5,assists,Liverpool
+6,cards_yellow,Manchester City
+7,cards_red,Leicester City
+8,xg,Liverpool
+9,xg_assist,Liverpool
+10,progressive_carries,Manchester City
+11,progressive_passes,Liverpool
+12,progressive_passes_received,Liverpool
+13,goals_per90,Manchester City
+14,assists_per90,Liverpool
+15,xg_per90,Aston Villa
+16,xg_assist_per90,Chelsea
+17,gk_goals_against_per90,Arsenal
+18,gk_save_pct,Bournemouth
+19,gk_clean_sheets_pct,Aston Villa
+20,gk_pens_save_pct,Everton
+21,shots_on_target_pct,Nott'ham Forest
+22,shots_on_target_per90,Bournemouth
+23,goals_per_shot,Arsenal
+24,average_shot_distance,Nott'ham Forest
+25,passes_completed,Liverpool
+26,passes_pct,Manchester City
+27,passes_total_distance,Liverpool
+28,passes_pct_short,Manchester City
+29,passes_pct_medium,Manchester City
+30,passes_pct_long,Liverpool
+31,assisted_shots,Liverpool
+32,passes_into_final_third,Liverpool
+33,passes_into_penalty_area,Liverpool
+34,crosses_into_penalty_area,Fulham
+35,sca,Liverpool
+36,sca_per90,Liverpool
+37,gca,Liverpool
+38,gca_per90,Liverpool
+39,tackles,Crystal Palace
+40,tackles_won,Crystal Palace
+41,challenges,Liverpool
+42,challenges_lost,Aston Villa
+43,blocks,Brentford
+44,blocked_shots,Brentford
+45,blocked_passes,Crystal Palace
+46,interceptions,Bournemouth
+47,touches,Liverpool
+48,touches_def_pen_area,Brentford
+49,touches_def_3rd,Brentford
+50,touches_mid_3rd,Liverpool
+51,touches_att_3rd,Manchester City
+52,touches_att_pen_area,Liverpool
+53,take_ons,West Ham
+54,take_ons_won_pct,Liverpool
+55,take_ons_tackled_pct,Arsenal
+56,carries,Manchester City
+57,carries_progressive_distance,Manchester City
+58,carries_into_final_third,Manchester City
+59,carries_into_penalty_area,Manchester City
+60,miscontrols,Southampton
+61,dispossessed,Ipswich Town
+62,passes_received,Liverpool
+63,fouls,Manchester City
+64,fouled,Newcastle Utd
+65,offsides,Brighton
+66,crosses,Fulham
+67,ball_recoveries,Crystal Palace
+68,aerials_won,Brentford
+69,aerials_lost,Manchester City
+70,aerials_won_pct,Brentford
+71,all,Liverpool

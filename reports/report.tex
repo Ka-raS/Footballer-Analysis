@@ -1,6 +1,5 @@
 \documentclass{report}
-
-% how do I even supposed to comment .tex files, everything seems self explanatory 
+\usepackage{graphicx}
 
 \setlength{\headsep}{0.0cm}            
 \setlength{\headheight}{0.0cm}         
@@ -35,8 +34,8 @@ This report is the justification and results for the assignment.
 The assignment focuses on collecting and analyzing football players statistical data from 
 the 2024-2025 Premier League.
 
-\subsection{The Assignment Problems}
-There are four main problems:
+\subsection{The Assignment Tasks}
+There are four main tasks:
 \begin{enumerate}
     \renewcommand{\labelenumi}{\Roman{enumi}.}
     \item Collecting data from fbref.com for players with more than 90 minutes of 
@@ -48,7 +47,7 @@ There are four main problems:
     cluster plot. 
     \item Collecting data from footballtransfers.com. Specifically the transfer value of player 
     with more than 900 minutes of playing time. 
-    Choosing a model to estimate transfer value from collected data in the first problem.
+    Choosing a model to estimate transfer value from collected data in task I.
 \end{enumerate}
 
 \subsection{Packages Dependencies}
@@ -66,7 +65,7 @@ There are four main problems:
     It provides simple and efficient tools and works seemlessly with pandas.
 \end{itemize}
 
-\section{Problem I: Collecting Data From fbref.com}
+\section{Task I: Collecting Data From fbref.com}
 The task is to collect all Premier League players specific statistics if they have played for 
 mmore than 90 minutes. Each team has its own URL to the statistic tables, there is no URL or 
 table which includes all players. The statistics are spread through out many tables.
@@ -102,7 +101,8 @@ CSS selector to target every \verb|<a>| in the table is:
     table#results2024-202591_overall > tbody > tr > td[data-stat="team"] > a    
 \end{verbatim}
 
-\noindent Each team's tables source have the same structure:
+\noindent
+Each team's tables source have the same structure:
 \begin{verbatim}
     <!-- Liverpool's Standard Stats Table -->
     <table id="stats_standard_9">
@@ -125,7 +125,8 @@ CSS selector to target every \verb|<a>| in the table is:
     <!-- other table -->
 \end{verbatim}
 
-\noindent Based on the HTML above, each tr is for one player, each th is the player's name, each td is the 
+\noindent
+Based on the HTML above, each tr is for one player, each th is the player's name, each td is the 
 player's different statistic. But the last tr is just a header, which CSS selector needs to ignore:
 \begin{verbatim}
     /* in each table */
@@ -134,8 +135,9 @@ player's different statistic. But the last tr is just a header, which CSS select
     tr > td                                     /* target all td */
 \end{verbatim}
 
-\noindent To select a list of targeted statistics instead of all statistics, the attribute tr.data's 
-name need to be checked. The \verb|TABLES_STATS| in \verb|problem_i.py| is a list of 
+\noindent
+To select a list of targeted statistics instead of all statistics, the attribute tr.data's 
+name need to be checked. The \verb|TABLES_STATS| in \verb|task_i.py| is a list of 
 table ids pairing with its statistics. They are used for selecting those targeted statistics list. 
 Any unavailable statistic is marked as N/a.
 
@@ -160,7 +162,7 @@ The results will be stored in a pandas.DataFrame and saved to results.csv. Howev
 Finally, all numeric statistics can now be converted to number, categorical statistics to string, and
 missing statistics to N/a
 
-\section{Problem II: Statistical Analysis and Visualization}
+\section{Task II: Statistical Analysis and Visualization}
 The assignment further requires analyzing the collected data as follows:
 \begin{enumerate}
     \item \textbf{Ranking:} Identify the top 3 and bottom 3 players for each statistic. 
@@ -181,7 +183,7 @@ The task is fairly straight forward. For each DataFrame colums:
     pandas.Series().nsmallest(3) 
 \end{verbatim}
 This data is crucial for seeing if there are any outliers or extreme values in the features, which
-would then be considered later on in the problem III and IV.
+would then be considered later on in the task III and IV.
 
 \subsection{Statistical Summaries}
 The mean formula: 
@@ -206,7 +208,7 @@ players combined and for each individual team.
 \end{verbatim}
 The histograms shows whether each statistics feature distribution of the dataset is symmetrical 
 and resembles a Gaussian distribution or not. The skewness of the graph is also in considerationbefore 
-using the K-means algorithm in problem III. 
+using the K-means algorithm in task III. 
 
 \subsection{Best Team}
 This task is open for interpretation as the best is entirely subjective. For this assignment, the 
@@ -216,7 +218,7 @@ So a coefficient is needed. For bad statistics, the coefficient is -1.
 The best performing team is the one that scores first placed the most.
 This may come as too simple and can contain "error". But again, this is purely subjective.
 
-\section{Problem III: Clustering and Dimensionality Reduction}
+\section{Task III: Clustering and Dimensionality Reduction}
 \subsection{K-means Clustering}
 The K-means algorithm is used for classifying players into groups based on their performance statistics.
 While the assignment requires to use K-means, K-prototypes would have been a much better choice.
@@ -237,21 +239,32 @@ so it is reasonable to fill them with 0. For instance, the percentage of clean s
 should be 0. For the other missing values, it's most likely because of the database couldn't find them. 
 Filling these spots will mean of statistic is the safest choice.\\
 
-\noindent Next on the list is handling categorical statistics. Since K-means is designed for Euclidean spaces where 
+\noindent
+Next on the list is handling categorical statistics. Since K-means is designed for Euclidean spaces where 
 calculating the arithmetic mean (centroid). Any technique of converting the categorical
 statistics like One-Hot Encoding or Gower Distance Matrix would not make sense. The centroid would 
 become ambiguous. So, it is the best decision to drop those statistics. \\
 
-\noindent One more thing to consider is the dataset skewness. Skewed distributions can pose significant 
+\noindent
+One more thing to consider is the dataset skewness. Skewed distributions can pose significant 
 challenges for K-means. When the data is skewed, a few extreme values can pull the centroid away from 
-the real center of data points, ultimately distorting the clustering process. The results in problem II
-has shown that the dataset is indeed skewed based on the histograms, both right skewed and left skewed.
+the real center of data points, ultimately distorting the clustering process. Histograms for 6 representative 
+statistics below suggests that most statistics are either right skewed, left skewed or sharply-spiked. 
+A symmetrical distribution like \verb|average_shot_distance| is uncommon.
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=\textwidth]{../output/task_ii/histograms/All.pdf}
+    \caption{task\_ii/histograms/All.pdf}
+\end{figure}
+
+\newpage
+\noindent
+The Yeo-Johnson transformation is a power transform that can handle both positive and zero values, 
+unlike Box-Cox (the transformation it is based on). This transformation would make the data more 
+Gaussian-like (symmetrical).
 \begin{verbatim}
     sklearn.preprocessing.power_transform(method='yeo-johnson')
 \end{verbatim}
-The Yeo-Johnson transformation is a power transform that can handle both positive and zero values, 
-unlike Box-Cox (the transformation it is based on). This transformation would make the data more 
-Gaussian-like (symmetrical). \\
 Yeo-Johnson Formula: 
 \[ % had to chatgpt-ed this ngl
 T(y; \lambda) =
@@ -270,7 +283,8 @@ T(y; \lambda) =
     \item \( T(y; \lambda) \): the transformed value of \( y \).
 \end{itemize}
 
-\noindent Finally, there are standardization and scaling.
+\noindent
+Finally, there are standardization and scaling.
 \begin{verbatim}
     sklearn.preprocessing.StandardScaler().fit_transform()
 \end{verbatim}
@@ -280,8 +294,13 @@ of 1. The formula:
 \[ X_{scaled} = \frac{X - Mean}{\textit{Standard Deviation}} \]
 
 \subsubsection{Optimal K Clusters}
-The method used is analyzing the histograms of Inertia Elbow, Silhouette Score, Davies-Bouldin Index,
+The method involves analyzing histograms of Inertia Elbow, Silhouette Score, Davies-Bouldin Index,
 Calinski-Harabasz Index for a range of K from 2 to 20.
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=\textwidth]{../output/task_iii/clusters_evaluation.pdf}
+    \caption{task\_iii/clusters\_evaluation.pdf}
+\end{figure}
 
 \paragraph{Inertia Elbow:} measures how internally coherent the clusters are. A lower inertia 
 indicates that the clusters are more compact and well-defined. But a higher K always result in a lower
@@ -316,10 +335,10 @@ within-cluster dispersion. The higher the better.
     \item \( tr(W_K) \): the within-cluster dispersion matrix.
 \end{itemize}
 
-\noindent Based on \verb|clusters_evaluation.svg|, K = 2 may looks good. But considering it may just be a 
+\noindent
+Based on \verb|clusters_evaluation.svg|, K = 2 may looks good. But considering it may just be a 
 goalkeepers cluster and an outfielders cluster, it is better to also split the outfielders into smaller
-clusters. The actual K optimal should be 3 or 4. 4 was chosen because that's the student's favourite 
-number. % yes it is
+clusters. The actual K optimal chosen is 4.
 
 \subsection{Principal Component Analysis (PCA)}
 PCA is applied to reduce the dataset's dimensionality down to 2, allowing for a 2D scatter plot of data 
@@ -328,24 +347,28 @@ points. This visualization is the double checking if K = 4 is correct. The plot 
 \begin{verbatim}
     sklearn.decomposition.PCA(2).fit_transform()
 \end{verbatim}
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=\textwidth]{../output/task_iii/pca_clusters_2d.pdf}
+    \caption{task\_iii/pca\_clusters\_2d.pdf}
+\end{figure}
 Analyzing the plot, the 4 clusters seems well seperated enough. Especially the top left cluster, which
-most likely the goalkeepers cluster.
+most likely is the goalkeepers cluster.
 
-\section{Problem IV: Transfer Values Predicting}
+\section{Task IV: Transfer Values Predicting}
 Player transfer values are collected from \verb|footballtransfers.com| only for players with more than 
 900 minutes of playing time. A proposed method for estimating the values involves:
 
 \subsection{Identify The HTML Elements}
 The task requires scraping transfer values from footballtransfers.com with playing time over 900 
-minutes. The player names and minutes played data can be taken from problem I. Unlike fbref.com 
+minutes. The player names and minutes played data can be taken from task I. Unlike fbref.com 
 source which is static HTML, footballtransfers.com loads its content dynamically using JavaScript.
 \begin{verbatim}
     <|-- Table Before JavaScript Loaded -->
     <tbody id="player-table-body">
         <tr class="table-placeholder">
             <!-- empty td -->
-\end{verbatim}
-\begin{verbatim}
+
     <|-- Table After JavaScript Loaded -->
     <tbody id="player-table-body">
         <tr>
@@ -361,7 +384,8 @@ source which is static HTML, footballtransfers.com loads its content dynamically
         <!-- other tr -->
 \end{verbatim}
 
-\noindent Therefore, selenium need to wait before the table gets fully loaded.
+\noindent
+Therefore, selenium need to wait before the table gets fully loaded.
 \begin{verbatim}
     WebDriverWait(driver, 30).until(
         EC.presence_of_element_located((
@@ -371,7 +395,8 @@ source which is static HTML, footballtransfers.com loads its content dynamically
     )
 \end{verbatim}
 
-\noindent After that, simply point CSS selector to the name and transfer value of the player which has played
+\noindent
+The simply point CSS selector to the name and transfer value of the player which has played
 above 900 minutes.
 \begin{verbatim}
     tbody#player-table-body > tr            /* target all tr */
@@ -393,17 +418,28 @@ This section can be split into three main parts:
 Estimated transfer values of a players are often influenced by that players statistics. The higher
 the stats, the higher the transfer value. \verb|pca_2d.svg| shows that, despites not having done
 features selection, the plot still resembles a clear linear pattern. \\
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=\textwidth]{../output/task_iv/pca_2d.pdf}
+    \caption{task\_iv/pca\_2d.pdf}
+\end{figure}
 
-\noindent If the criterias are being easy to implement, fast to train and perform decently well, then 
-Linear Model is a perfect fit. More specifically, LassoCV. \\
+\newpage
+\noindent
+If the criterias are being easy to implement, fast training and decent performace, then 
+Linear Model is a perfect fit. More specifically, LassoCV model. \\
 
-\noindent Lasso can perform both regression and automatic feature selection. By adding an L1 penalty, 
+\noindent
+Lasso can perform both regression and automatic feature selection. By adding an L1 penalty, 
 it can decrease non important features coefficients to zero. \\
 
-\noindent The difference between Lasso and LassoCV is the additional use of cross-validation to help with 
-choosing the optimal alpha parameter. Making LassoCV easy to use while still being performant. \\
+\noindent
+The difference between Lasso and LassoCV is that LassoCV use cross-validation to 
+automatically select the optimal alpha parameter. Making LassoCV easy to use while still being 
+performant. \\
 
-\noindent Lasso Regression Objective Function:
+\noindent
+Lasso Regression Objective Function:
 \[  % no shot I made this
     \hat{\beta} = \arg\min_{\beta} \left\{ \frac{1}{2n} \sum_{i=1}^{n} 
     (y_i - X_i^{\top} \beta)^2 + \alpha \sum_{j=1}^{p} |\beta_j| \right\}
@@ -417,16 +453,17 @@ choosing the optimal alpha parameter. Making LassoCV easy to use while still bei
     \item \( \alpha \): regularization parameter (L1 penalty strength)
 \end{itemize}
 
-LassoCV automatically $\alpha$ using cross-validation:
+LassoCV selecting $\alpha$ using cross-validation:
 \[ \alpha^* = \arg\min_{\alpha} CVError(\alpha) \]
 \begin{itemize}
     \item \( CVError \): average cross-validated prediction error for each tested value
 \end{itemize}
 
 \subsubsection{Prepare Dataset}
-Handling missing value N/a is the same as problem III. \\
+Handling missing value N/a is the same as task III. \\
 
-\noindent This time, the dataset can be One-Hot encoded. \\
+\noindent
+For this case, the dataset can be One-Hot encoded. \\
 One-Hot Encoding is the technique to transform each categorical features values into individuals
 binary columns. For each categorical feature encoded, a column is dropped to prevent multicollinearity,
 which is important for linear models like Lasso. \\
@@ -444,7 +481,7 @@ the scores was not just a fluke. \\
     def bootstrap(data, model, num_samples):
     scores = []
     
-    for i in range(num_samples):
+    for i in range(num_samples)
         bootstrap_sample = draw_bootstrap_sample(data)
         model.fit(bootstrap_sample)
         score = model.evaluate(data)
@@ -454,18 +491,27 @@ the scores was not just a fluke. \\
     return average_score
 \end{verbatim}
 
-\noindent R2 Score and RMSE are used for evaluating the model.
-\[ R^2 = 1 - \frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \bar{y})^2} \]
+\noindent
+R2 Score and RMSE are used for evaluating the model.
+\[ R^2 = 1 - \frac{\sum_{i=1}^{N} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{N} (y_i - \bar{y})^2} \]
+\[ RMSE = \sqrt{\frac{1}{N} \sum_{i=1}^{N} (y_i - \hat{y}_i)^2} \]
 \begin{itemize}
     \item \( y \): the true target values.
     \item \( \hat{y} \): the predicted target values.
     \item \( \bar{y} \): the mean of the true target values.
 \end{itemize}
 
-\noindent Since a high sample counts would take longer time, number of samples = 10 was settled on in the program.
-\verb|bootstrapping_scores.svg| shows that R2 Score average around 0.7, RMSE is around 17.0. An 
+\noindent
+Since a high sample counts would take longer time, number of samples = 10 was settled on in the program.
+\verb|bootstrapping_scores.svg| shows that R2 Score average around 0.7, RMSE is around 14.0. An 
 acceptable result.
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=\textwidth]{../output/task_iv/bootstrapping_scores.pdf}
+    \caption{task\_iv/bootstrapping\_scores.pdf}
+\end{figure}
 
+\newpage
 \subsubsection{Result}
 Analyzing \verb|transfer_values_predicted.csv|, some of the model's predictions are quite close to
 the true value, while some are off by a whole landslide. Especially the ones with negative values. 
@@ -474,6 +520,11 @@ Brutal. \\
 by a lot. The team and nationality statistics also ranks very high up on the graph. Performance 
 statistics appear less than expected, which can be explained by the fact that those may be correlated 
 with each other, leading to LassoCV dropping them.
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=\textwidth]{../output/task_iv/feature_importance.pdf}
+    \caption{task\_iv/feature\_importance.pdf}
+\end{figure}
 
 \section{Conclusion}
 Overall, this report reviews and explains the entire process of data collection, analysis, clustering, and 
@@ -486,5 +537,7 @@ The assignment was a great way to study and understand Data Science and Machine 
 {\small \verb|https://www.geeksforgeeks.org/feature-encoding-techniques-machine-learning|} \\
 {\small \verb|https://www.geeksforgeeks.org/cross-validation-vs-bootstrapping|} \\
 {\small \verb|https://www.youtube.com/watch?v=d6iQrh2TK98|} \\
+
+% Isn't this where...
 
 \end{document}
