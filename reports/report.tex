@@ -270,7 +270,7 @@ T(y; \lambda) =
     \item \( T(y; \lambda) \): the transformed value of \( y \).
 \end{itemize}
 
-Finally, there are standardization and scaling.
+\noindent Finally, there are standardization and scaling.
 \begin{verbatim}
     sklearn.preprocessing.StandardScaler().fit_transform()
 \end{verbatim}
@@ -361,7 +361,7 @@ source which is static HTML, footballtransfers.com loads its content dynamically
         <!-- other tr -->
 \end{verbatim}
 
-Therefore, selenium need to wait before the table gets fully loaded.
+\noindent Therefore, selenium need to wait before the table gets fully loaded.
 \begin{verbatim}
     WebDriverWait(driver, 30).until(
         EC.presence_of_element_located((
@@ -371,7 +371,7 @@ Therefore, selenium need to wait before the table gets fully loaded.
     )
 \end{verbatim}
 
-After that, simply point CSS selector to the name and transfer value of the player which has played
+\noindent After that, simply point CSS selector to the name and transfer value of the player which has played
 above 900 minutes.
 \begin{verbatim}
     tbody#player-table-body > tr            /* target all tr */
@@ -394,16 +394,16 @@ Estimated transfer values of a players are often influenced by that players stat
 the stats, the higher the transfer value. \verb|pca_2d.svg| shows that, despites not having done
 features selection, the plot still resembles a clear linear pattern. \\
 
-If the criterias are being easy to implement, fast to train and perform decently well, then 
+\noindent If the criterias are being easy to implement, fast to train and perform decently well, then 
 Linear Model is a perfect fit. More specifically, LassoCV. \\
 
-Lasso can perform both regression and automatic feature selection. By adding an L1 penalty, 
+\noindent Lasso can perform both regression and automatic feature selection. By adding an L1 penalty, 
 it can decrease non important features coefficients to zero. \\
 
-The difference between Lasso and LassoCV is the additional use of cross-validation to help with 
+\noindent The difference between Lasso and LassoCV is the additional use of cross-validation to help with 
 choosing the optimal alpha parameter. Making LassoCV easy to use while still being performant. \\
 
-Lasso Regression Objective Function:
+\noindent Lasso Regression Objective Function:
 \[  % no shot I made this
     \hat{\beta} = \arg\min_{\beta} \left\{ \frac{1}{2n} \sum_{i=1}^{n} 
     (y_i - X_i^{\top} \beta)^2 + \alpha \sum_{j=1}^{p} |\beta_j| \right\}
@@ -426,7 +426,7 @@ LassoCV automatically $\alpha$ using cross-validation:
 \subsubsection{Prepare Dataset}
 Handling missing value N/a is the same as problem III. \\
 
-This time, the dataset can be One-Hot encoded. \\
+\noindent This time, the dataset can be One-Hot encoded. \\
 One-Hot Encoding is the technique to transform each categorical features values into individuals
 binary columns. For each categorical feature encoded, a column is dropped to prevent multicollinearity,
 which is important for linear models like Lasso. \\
@@ -454,7 +454,7 @@ the scores was not just a fluke. \\
     return average_score
 \end{verbatim}
 
-R2 Score and RMSE are used for evaluating the model.
+\noindent R2 Score and RMSE are used for evaluating the model.
 \[ R^2 = 1 - \frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \bar{y})^2} \]
 \begin{itemize}
     \item \( y \): the true target values.
@@ -462,7 +462,7 @@ R2 Score and RMSE are used for evaluating the model.
     \item \( \bar{y} \): the mean of the true target values.
 \end{itemize}
 
-Since a high sample counts would take longer time, number of samples = 10 was settled on in the program.
+\noindent Since a high sample counts would take longer time, number of samples = 10 was settled on in the program.
 \verb|bootstrapping_scores.svg| shows that R2 Score average around 0.7, RMSE is around 17.0. An 
 acceptable result.
 
