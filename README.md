@@ -1,4 +1,4 @@
-# Football Players Statistical Analysis
+# Footballer Analysis
     
 A school project involves collecting and analyzing football players statistical data from the 2024-2025 Premier League.
 
@@ -18,8 +18,8 @@ Outputs directories are displayed on terminal. Total runtime should be around 3 
 
 1. Clone Repo:
     ```bash
-    git clone https://github.com/Ka-raS/School-Assignment-1.git
-    cd School-Assignment-1
+    git clone https://github.com/Ka-raS/Footballer-Analysis.git
+    cd Footballer-Analysis
     ```
 
 2. Install Package Dependencies:
